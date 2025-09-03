@@ -91,6 +91,8 @@ function DashboardTestingContent() {
     if (storedData && !dashboardData) {
       try {
         const parsedData = JSON.parse(storedData);
+        
+        // Data is already validated on test-api page, so we can trust it
         setDashboardData(parsedData);
         setShowJsonInput(false);
         // Clear the stored data after loading
@@ -99,6 +101,8 @@ function DashboardTestingContent() {
       } catch (error) {
         console.error('Error parsing stored data:', error);
         toast.error('Failed to load stored data');
+        // Clear invalid stored data
+        localStorage.removeItem('dashboardTestData');
       }
     }
   }, [dashboardData]);
@@ -112,19 +116,32 @@ function DashboardTestingContent() {
 
 
 
+  // Shared validation function
+  const validateDashboardData = (data: unknown): data is DashboardData => {
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid data: must be an object');
+    }
+
+    const dashboardData = data as Record<string, unknown>;
+    
+    if (!dashboardData.ChildNodes || !Array.isArray(dashboardData.ChildNodes)) {
+      throw new Error('Invalid data structure: ChildNodes array is required');
+    }
+
+    if (!dashboardData.AreaCode || !dashboardData.OutletCode) {
+      throw new Error('Invalid data structure: AreaCode and OutletCode are required');
+    }
+
+    return true;
+  };
+
   const loadJsonData = () => {
     try {
       setLoading(true);
       const parsedData = JSON.parse(jsonInput);
       
-      // Validate the data structure
-      if (!parsedData.ChildNodes || !Array.isArray(parsedData.ChildNodes)) {
-        throw new Error('Invalid data structure: ChildNodes array is required');
-      }
-
-      if (!parsedData.AreaCode || !parsedData.OutletCode) {
-        throw new Error('Invalid data structure: AreaCode and OutletCode are required');
-      }
+      // Validate the data structure using shared function
+      validateDashboardData(parsedData);
 
       setDashboardData(parsedData);
       setShowJsonInput(false);

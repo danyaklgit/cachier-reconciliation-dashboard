@@ -161,12 +161,24 @@ export default function TestApiPage() {
                     onClick={() => {
                       try {
                         const jsonData = JSON.parse(response);
-                        // Store the data in localStorage so dashboard testing page can access it
+                        
+                        // Validate the data structure before navigation
+                        if (!jsonData.ChildNodes || !Array.isArray(jsonData.ChildNodes)) {
+                          setError('Invalid data structure: ChildNodes array is required');
+                          return;
+                        }
+
+                        if (!jsonData.AreaCode || !jsonData.OutletCode) {
+                          setError('Invalid data structure: AreaCode and OutletCode are required');
+                          return;
+                        }
+
+                        // Data is valid, store it and navigate
                         localStorage.setItem('dashboardTestData', JSON.stringify(jsonData));
-                        // Navigate to dashboard testing page
                         router.push('/dashboard_testing');
                       } catch (error) {
                         console.error('Error parsing JSON:', error);
+                        setError('Invalid JSON format');
                       }
                     }}
                     variant="outline"
