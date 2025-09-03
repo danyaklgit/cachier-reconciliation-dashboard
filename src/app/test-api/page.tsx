@@ -96,7 +96,7 @@ export default function TestApiPage() {
 
               <div className="space-y-3">
                 {parameters.map((param, index) => (
-                  <div key={index} className="flex items-center space-x-3">
+                  <div key={index} className="flex items-baseline space-x-3">
                     <input
                       type="text"
                       placeholder="Parameter key"
@@ -104,12 +104,11 @@ export default function TestApiPage() {
                       onChange={(e) => updateParameter(index, 'key', e.target.value)}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
                     />
-                    <input
-                      type="text"
+                    <textarea
                       placeholder="Parameter value"
                       value={param.value}
                       onChange={(e) => updateParameter(index, 'value', e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm h-11 min-h-11"
                     />
                     {parameters.length > 1 && (
                       <Button
