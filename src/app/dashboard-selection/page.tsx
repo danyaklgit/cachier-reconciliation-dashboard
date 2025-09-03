@@ -100,6 +100,13 @@ export default function DashboardSelection() {
           >
             Custom Data Test
           </Button>
+          <span className="text-gray-500 text-xs italic text-center block">OR</span>
+          <Button
+            onClick={() => router.push('/test-api')}
+            className="w-full bg-white text-primary disabled:text-gray-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            API Test
+          </Button>
         </CardContent>
       </Card>
     </div>

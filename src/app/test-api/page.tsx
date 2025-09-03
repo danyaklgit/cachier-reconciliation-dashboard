@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
 
 export default function TestApiPage() {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<string>('');
   const [error, setError] = useState<string>('');
-  
+  const router = useRouter();
   // Default parameters
   const [parameters, setParameters] = useState([
     { key: "LanguageCode", value: "en" },
@@ -52,7 +53,7 @@ export default function TestApiPage() {
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         // Show the actual API error message
         setError(data.error || `HTTP error! status: ${response.status}`);
@@ -72,8 +73,14 @@ export default function TestApiPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">API Test Page</h1>
-        
+        <div className="flex justify-start items-baseline mb-8 gap-4">
+          <Button variant="outline" className='cursor-pointer border-0' onClick={() => router.push('/dashboard-selection')}>
+            Back To Selection
+          </Button>
+          <h1 className="text-3xl font-bold text-gray-900">API Test Page</h1>
+
+        </div>
+
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Test Dashboard API</CardTitle>
@@ -86,7 +93,7 @@ export default function TestApiPage() {
                   Add Parameter
                 </Button>
               </div>
-              
+
               <div className="space-y-3">
                 {parameters.map((param, index) => (
                   <div key={index} className="flex items-center space-x-3">
@@ -120,16 +127,16 @@ export default function TestApiPage() {
             </div>
 
             <div className="flex justify-between w-full my-10">
-              <Button 
-                onClick={testApi} 
+              <Button
+                onClick={testApi}
                 disabled={loading}
                 className="text-white"
               >
                 {loading ? 'Testing API...' : 'Test API Call'}
               </Button>
-              
+
               {response && (
-                <Button 
+                <Button
                   onClick={() => {
                     navigator.clipboard.writeText(response);
                     // Optional: Show a brief success message
@@ -150,14 +157,14 @@ export default function TestApiPage() {
                 </Button>
               )}
             </div>
-            
+
             {error && (
               <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
                 <h3 className="text-red-800 font-semibold mb-2">Error:</h3>
                 <p className="text-red-700">{error}</p>
               </div>
             )}
-            
+
             {response && (
               <div className="p-4 bg-green-50 border border-green-200 rounded-md">
                 <h3 className="text-green-800 font-semibold mb-2">Response:</h3>
