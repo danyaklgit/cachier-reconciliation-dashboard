@@ -36,7 +36,7 @@ export default function DashboardSelection() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md bg-white">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-gray-900">
             Cashier Reconciliation Dashboard
@@ -89,14 +89,14 @@ export default function DashboardSelection() {
           <Button
             onClick={handleContinue}
             disabled={!selectedArea || !selectedOutlet || !selectedDate}
-            className="w-full text-primary disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full text-primary disabled:text-gray-500 bg-gray-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           >
             Continue to Dashboard
           </Button>
           <span className="text-gray-500 text-xs italic text-center block">OR</span>
           <Button
             onClick={() => router.push('/dashboard_testing')}
-            className="w-full text-primary disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-white text-primary disabled:text-gray-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           >
             Custom Data Test
           </Button>

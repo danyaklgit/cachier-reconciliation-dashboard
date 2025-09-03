@@ -187,7 +187,7 @@ function DashboardTestingContent() {
                   <Button 
                     onClick={loadJsonData}
                     disabled={!jsonInput.trim()}
-                    className="px-8 py-3"
+                    className="px-8 py-3 text-white"
                   >
                     Load Data
                   </Button>

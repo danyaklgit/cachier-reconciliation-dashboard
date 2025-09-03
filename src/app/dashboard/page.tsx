@@ -214,7 +214,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f4f5f7]">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -257,7 +257,7 @@ function DashboardContent() {
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-48 justify-between text-left font-normal"
+                    className="w-48 justify-between text-left font-normal bg-white cursor-pointer text-primary"
                   >
                     <span className="truncate">
                       {selectedTopics.length > 0
@@ -354,7 +354,7 @@ function DashboardContent() {
           </div>
         </div>
 
-        <Card className="mb-8">
+        <Card className="mb-8 bg-white">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg font-bold text-gray-900">Filters</CardTitle>
@@ -377,7 +377,9 @@ function DashboardContent() {
 
 
               {/* Dynamic Filters */}
-              {availableFilters.map((filter) => (
+              {availableFilters.map((filter) => {
+                const filterSelected = filterState[filter.FilterTag]?.length > 0
+                return (
                 <div key={filter.FilterTag} className="space-y-2">
                   <Label>{filter.FilterLabel}</Label>
                   <Popover>
@@ -386,8 +388,8 @@ function DashboardContent() {
                         variant="outline"
                         className="w-full justify-between text-left font-normal"
                       >
-                        <span className="truncate">
-                          {filterState[filter.FilterTag]?.length > 0
+                        <span className={`truncate ${filterSelected ? 'text-primary' : 'text-gray-500'}`}>
+                          {filterSelected
                             ? `${filterState[filter.FilterTag]?.length} selected`
                             : `Select ${filter.FilterLabel}`}
                         </span>
@@ -397,10 +399,10 @@ function DashboardContent() {
                       <div className="p-3 border-b">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium">{filter.FilterLabel}</span>
-                          {filterState[filter.FilterTag]?.length > 0 && (
+                          {filterSelected && (
                             <Button
                               variant="ghost"
-                              size="sm"
+                              size="sm" 
                               onClick={() => handleFilterChange(filter.FilterTag, [])}
                               className="h-auto p-1 text-xs text-gray-500 hover:text-gray-700"
                             >
@@ -463,7 +465,7 @@ function DashboardContent() {
                     </div>
                   )} */}
                 </div>
-              ))}
+              )})}
 
               {/* Business Day */}
               <div className="space-y-2">
@@ -490,13 +492,13 @@ function DashboardContent() {
         </Card>
 
         {/* Main Dashboard Table */}
-        <Card>
+        <Card className="bg-white">
           <CardHeader>
             <div className="text-center">
               <h2 className="text-2xl font-bold text-gray-900">
                 {dashboardData.AreaCode} ({dashboardData.OutletCode}) CASHIER RECONCILIATION DASHBOARD
               </h2>
-              <div className="flex items-center justify-center space-x-10 mt-4">
+              <div className="flex flex-col md:flex-row gap-2 md:gap-0 items-center justify-center space-x-10 mt-4">
                 <Button
                   variant="outline"
                   onClick={() => navigateToDate('prev')}

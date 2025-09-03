@@ -1,8 +1,4 @@
-./next
-./node_modules
-.env
-
-/next
+/.next
 /node_modules
 .env
 

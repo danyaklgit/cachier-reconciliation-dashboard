@@ -30,9 +30,19 @@ const formatNumber = (num: number): string => {
 };
 
 const getRowStyle = (nodeTag: string, depth: number) => {
-  const baseStyle = 'border-b border-gray-200';
-  const depthStyle = depth === 0 ? 'font-semibold bg-gray-50' : 'bg-white';
-  const tagStyle = nodeTag === 'TOPIC' ? 'text-blue-600' : 'text-gray-900';
+  // const baseStyle = 'border-b border-gray-50';
+  const baseStyle = '';
+  const depthStyle = depth === 0 ?
+    ' text-primary text-base' :
+    depth === 1 ?
+      'text-sm font-semibold text-slate-800' :
+      depth === 2 ?
+        'text-sm font-semibold text-slate-700' :
+      depth === 3 ?
+        'text-xs font-semibold text-slate-600' :
+      'text-xs bg-white text-slate-500';
+  // const tagStyle = nodeTag === 'TOPIC' ? 'text-primary' : 'text-gray-900';
+  const tagStyle = '';
 
   return `${baseStyle} ${depthStyle} ${tagStyle}`;
 };
@@ -45,10 +55,12 @@ const getCellStyle = (value: number, columnType: string) => {
     // case 'outstanding':
     case 'exceptions':
       return 'text-red-600 font-medium';
+    // case 'recorded':
+    // return 'text-blue-400 font-medium';
     case 'claimed':
     case 'settled':
     case 'awaitingSettlement':
-      return 'text-blue-600 font-medium';
+      return 'text-blue-400 font-medium';
     default:
       return 'text-green-600 font-medium';
   }
@@ -158,11 +170,14 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
           id: 'recorded',
           header: 'Recorded',
           accessorKey: 'RecordsVerification.Recorded',
-          cell: ({ getValue }) => (
-            <span className="text-right block">
-              {formatNumber(getValue() as number)}
-            </span>
-          ),
+          cell: ({ getValue }) => {
+            const value = getValue() as number;
+            return (
+              <span className={`text-right block ${getCellStyle(value, 'recorded')}`}>
+                {formatNumber(getValue() as number)}
+              </span>
+            );
+          },
         },
         {
           id: 'verified',
@@ -393,7 +408,7 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
                 <th
                   key={header.id}
                   colSpan={header.colSpan}
-                  className="border border-gray-300 border-x-gray-200  px-2 py-2 text-left font-semibold text-gray-700 text-sm"
+                  className="border border-gray-300 border-x-gray-200 px-2 py-2 text-left font-semibold text-slate-800 text-sm"
                 // style={{ width: header.getSize() }}
                 >
                   {header.isPlaceholder ? null : (
@@ -412,7 +427,7 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
               {row.getVisibleCells().map((cell) => (
                 <td
                   key={cell.id}
-                  className="border border-gray-300 border-x-gray-100 px-2 py-2 text-sm bg-white "
+                  className="border border-gray-200 border-x-transparent px-2 py-2 text-sm bg-white "
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
