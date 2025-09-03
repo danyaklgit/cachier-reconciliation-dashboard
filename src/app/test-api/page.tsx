@@ -119,13 +119,37 @@ export default function TestApiPage() {
               </div>
             </div>
 
-            <Button 
-              onClick={testApi} 
-              disabled={loading}
-              className="mb-4 text-white"
-            >
-              {loading ? 'Testing API...' : 'Test API Call'}
-            </Button>
+            <div className="flex justify-between w-full my-10">
+              <Button 
+                onClick={testApi} 
+                disabled={loading}
+                className="text-white"
+              >
+                {loading ? 'Testing API...' : 'Test API Call'}
+              </Button>
+              
+              {response && (
+                <Button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(response);
+                    // Optional: Show a brief success message
+                    const originalText = 'Copy to Clipboard';
+                    const button = document.querySelector('[data-copy-button]') as HTMLButtonElement;
+                    if (button) {
+                      button.textContent = 'Copied!';
+                      setTimeout(() => {
+                        button.textContent = originalText;
+                      }, 2000);
+                    }
+                  }}
+                  variant="outline"
+                  className="fixed bottom-5 right-[30%] bg-white text-primary"
+                  data-copy-button
+                >
+                  Copy to Clipboard
+                </Button>
+              )}
+            </div>
             
             {error && (
               <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
