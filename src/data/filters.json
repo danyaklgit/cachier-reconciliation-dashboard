@@ -1,0 +1,24 @@
+{
+  "Filters": [
+    {
+      "FilterTag": "TERMINAL",
+      "FilterLabel": "Terminal Id",
+      "FilterValues": ["98653265", "78845126", "98654512"]
+    },
+    {
+      "FilterTag": "DRIVER",
+      "FilterLabel": "Driver",
+      "FilterValues": ["Ali Mostafa", "Mohamad Taha"]
+    },
+    {
+      "FilterTag": "PAYMENT_METHOD",
+      "FilterLabel": "Payment Method",
+      "FilterValues": ["Mada", "Visa", "Master Card", "American Express"]
+    },
+    {
+      "FilterTag": "ROUTE",
+      "FilterLabel": "Route",
+      "FilterValues": ["DC101-0001", "DC101-0002", "DC101-0003"]
+    }
+  ]
+}

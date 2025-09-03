@@ -1,0 +1,19 @@
+{
+  "Topics": [
+    {
+      "TopicTag": "POS_CARDS",
+      "TopicLabel": "Pos Cards",
+      "AvailableFilterTags": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE"]
+    },
+    {
+      "TopicTag": "CASH",
+      "TopicLabel": "Cash",
+      "AvailableFilterTags": ["DRIVER", "ROUTE"]
+    },
+    {
+      "TopicTag": "WIRE_TRANSFERS",
+      "TopicLabel": "Wire Transfers",
+      "AvailableFilterTags": ["DRIVER", "ROUTE"]
+    }
+  ]
+}

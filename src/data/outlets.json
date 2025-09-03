@@ -1,0 +1,19 @@
+{
+  "Outlets": [
+    {
+      "OutletId": 9865,
+      "OutletCode": "CA1",
+      "OutletName": "Riad Central 1"
+    },
+    {
+      "OutletId": 9866,
+      "OutletCode": "CA2",
+      "OutletName": "Riad Central 2"
+    },
+    {
+      "OutletId": 9867,
+      "OutletCode": "CA3",
+      "OutletName": "Riad Central 3"
+    }
+  ]
+}

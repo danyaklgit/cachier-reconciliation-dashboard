@@ -1,0 +1,19 @@
+{
+  "Areas": [
+    {
+      "AreaId": 1245,
+      "AreaCode": "DC-101",
+      "AreaName": "Distribution Center Riad 101"
+    },
+    {
+      "AreaId": 1246,
+      "AreaCode": "DC-102",
+      "AreaName": "Distribution Center Jeddah 102"
+    },
+    {
+      "AreaId": 1247,
+      "AreaCode": "DC-103",
+      "AreaName": "Distribution Center Dammam 103"
+    }
+  ]
+}
