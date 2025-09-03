@@ -85,6 +85,24 @@ function DashboardTestingContent() {
     }
   }, [dashboardData, updateAvailableFilters]);
 
+  // Check for data from test-api page on component mount
+  useEffect(() => {
+    const storedData = localStorage.getItem('dashboardTestData');
+    if (storedData && !dashboardData) {
+      try {
+        const parsedData = JSON.parse(storedData);
+        setDashboardData(parsedData);
+        setShowJsonInput(false);
+        // Clear the stored data after loading
+        localStorage.removeItem('dashboardTestData');
+        toast.success('Data loaded from API test!');
+      } catch (error) {
+        console.error('Error parsing stored data:', error);
+        toast.error('Failed to load stored data');
+      }
+    }
+  }, [dashboardData]);
+
   const handleFilterChange = (filterTag: string, values: string[]) => {
     setFilterState(prev => ({
       ...prev,

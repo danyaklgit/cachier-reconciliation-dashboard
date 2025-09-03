@@ -136,25 +136,45 @@ export default function TestApiPage() {
               </Button>
 
               {response && (
-                <Button
-                  onClick={() => {
-                    navigator.clipboard.writeText(response);
-                    // Optional: Show a brief success message
-                    const originalText = 'Copy to Clipboard';
-                    const button = document.querySelector('[data-copy-button]') as HTMLButtonElement;
-                    if (button) {
-                      button.textContent = 'Copied!';
-                      setTimeout(() => {
-                        button.textContent = originalText;
-                      }, 2000);
-                    }
-                  }}
-                  variant="outline"
-                  className="fixed bottom-5 right-[30%] bg-white text-primary"
-                  data-copy-button
-                >
-                  Copy to Clipboard
-                </Button>
+                <>
+                  <Button
+                    onClick={() => {
+                      navigator.clipboard.writeText(response);
+                      // Optional: Show a brief success message
+                      const originalText = 'Copy to Clipboard';
+                      const button = document.querySelector('[data-copy-button]') as HTMLButtonElement;
+                      if (button) {
+                        button.textContent = 'Copied!';
+                        setTimeout(() => {
+                          button.textContent = originalText;
+                        }, 2000);
+                      }
+                    }}
+                    variant="outline"
+                    className="fixed bottom-5 right-[30%] bg-white text-primary"
+                    data-copy-button
+                  >
+                    Copy to Clipboard
+                  </Button>
+                  
+                  <Button
+                    onClick={() => {
+                      try {
+                        const jsonData = JSON.parse(response);
+                        // Store the data in localStorage so dashboard testing page can access it
+                        localStorage.setItem('dashboardTestData', JSON.stringify(jsonData));
+                        // Navigate to dashboard testing page
+                        router.push('/dashboard_testing');
+                      } catch (error) {
+                        console.error('Error parsing JSON:', error);
+                      }
+                    }}
+                    variant="outline"
+                    className="fixed bottom-5 right-[40%] bg-white text-primary"
+                  >
+                    Load into Dashboard Testing
+                  </Button>
+                </>
               )}
             </div>
 
