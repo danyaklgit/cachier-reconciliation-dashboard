@@ -157,7 +157,7 @@ function DashboardContent() {
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center">
                 <div className="text-xl font-semibold text-gray-900 cursor-pointer" onClick={() => router.push('/')}>
-                  <Image src="/swittle-logo.png" alt="logo" width={60} height={50} />
+                  <Image src="/logo_bwa_color.svg" alt="logo" width={60} height={50} />
                 </div>
               </div>
               <div className="flex items-center space-x-4">
@@ -222,7 +222,7 @@ function DashboardContent() {
             <div className="flex items-center">
               <div className="text-xl font-semibold text-gray-900 cursor-pointer" onClick={() => router.push('/')}>
 
-                <Image src="/swittle-logo.png" alt="logo" width={60} height={50} />
+                <Image src="/logo_bwa_color.svg" alt="logo" width={60} height={50} />
               </div>
             </div>
             <Button
@@ -248,7 +248,7 @@ function DashboardContent() {
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Dashboard Title */}
         <div className="mb-8 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-xl font-bold text-gray-900">CASHIER RECONCILIATION DASHBOARD</h1>
           {/* Topics Selection */}
           <div className="space-y-0 flex items-center gap-4">
             <div className="space-y-0 flex items-center gap-2">
@@ -357,7 +357,7 @@ function DashboardContent() {
         <Card className="mb-8 bg-white">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-bold text-gray-900">Filters</CardTitle>
+              <CardTitle className="text-lg font-bold text-gray-900">Custom Filters</CardTitle>
               {Object.keys(filterState).some(key => filterState[key]?.length > 0) && (
                 <Button
                   variant="outline"
@@ -468,7 +468,7 @@ function DashboardContent() {
               )})}
 
               {/* Business Day */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label>Business Day</Label>
                 <Input
                   type="date"
@@ -486,7 +486,7 @@ function DashboardContent() {
                     );
                   }}
                 />
-              </div>
+              </div> */}
             </div>
           </CardContent>
         </Card>
@@ -495,10 +495,10 @@ function DashboardContent() {
         <Card className="bg-white">
           <CardHeader>
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {dashboardData.AreaCode} ({dashboardData.OutletCode}) CASHIER RECONCILIATION DASHBOARD
-              </h2>
-              <div className="flex flex-col md:flex-row gap-2 md:gap-0 items-center justify-center space-x-10 mt-4">
+              {/* <h2 className="text-2xl font-bold text-gray-900">
+                {dashboardData.AreaCode} ({dashboardData.OutletCode}) 
+              </h2> */}
+              <div className="flex flex-col md:flex-row gap-2 md:gap-0 items-end justify-center space-x-10 mt-2">
                 <Button
                   variant="outline"
                   onClick={() => navigateToDate('prev')}
@@ -507,9 +507,25 @@ function DashboardContent() {
                   <span><ChevronLeft className="h-4 w-4" /></span>
                   <span>{businessDay ? formatDate(getPreviousDay(businessDay)) : ''}</span>
                 </Button>
-                <span className="font-semibold">
-                  Business Day: {businessDay ? formatDate(businessDay) : ''}
-                </span>
+                <div className="font-semibold flex flex-col items-center space-x-2">
+                  <span className='text-sm'>Business Day:</span>
+                  <Input
+                  type="date"
+                  value={businessDay || ''}
+                  onChange={(e) => {
+                    const newDate = e.target.value;
+                    // Format date as DDMMYYYY to match the data file naming convention
+                    const dateParts = newDate.split('-');
+                    const formattedDate = `${dateParts[2]}${dateParts[1]}${dateParts[0]}`;
+                    const newFileName = `${areaId}_${outletId}_${formattedDate}.json`;
+                    window.history.pushState(
+                      null,
+                      '',
+                      `/dashboard?data=${newFileName}&area=${areaId}&outlet=${outletId}&date=${newDate}`
+                    );
+                  }}
+                />
+                </div>
                 <Button
                   variant="outline"
                   onClick={() => navigateToDate('next')}

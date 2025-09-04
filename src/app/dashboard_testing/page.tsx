@@ -182,7 +182,7 @@ function DashboardTestingContent() {
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center">
                 <div className="text-xl font-semibold text-gray-900 cursor-pointer" onClick={() => router.push('/')}>
-                  <Image src="/swittle-logo.png" alt="logo" width={60} height={50} />
+                  <Image src="/logo_bwa_color.svg" alt="logo" width={60} height={50} />
                 </div>
               </div>
               <div className="flex items-center space-x-4">
@@ -292,7 +292,7 @@ function DashboardTestingContent() {
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center">
                 <div className="text-xl font-semibold text-gray-900 cursor-pointer" onClick={() => router.push('/')}>
-                  <Image src="/swittle-logo.png" alt="logo" width={60} height={50} />
+                  <Image src="/logo_bwa_color.svg" alt="logo" width={60} height={50} />
                 </div>
               </div>
               <div className="flex items-center space-x-4">
@@ -345,7 +345,7 @@ function DashboardTestingContent() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="text-xl font-semibold text-gray-900 cursor-pointer" onClick={() => router.push('/')}>
-                <Image src="/swittle-logo.png" alt="logo" width={60} height={50} />
+                <Image src="/logo_bwa_color.svg" alt="logo" width={60} height={50} />
               </div>
             </div>
             <div className="flex items-center space-x-4">

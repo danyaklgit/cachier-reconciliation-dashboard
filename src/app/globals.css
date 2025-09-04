@@ -1,8 +1,25 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'SaudiRiyalSymbol';
+  src: url('/saudiriyalsymbol.ttf') format('truetype'),
+}
+
+.icon-saudi_riyal {
+  font-family: 'SaudiRiyalSymbol', sans-serif !important;
+}
+
+.saudi-riyal {
+  font-family: 'SaudiRiyalSymbol', sans-serif;
+  font-size: inherit;
+  font-weight: bold;
+}
+
+
+
 @layer base {
   :root {
-    --font-nunito: 'Nunito', sans-serif;
+    --font-nunito: "Nunito", sans-serif;
     --color-primary: #30c3d5;
     --color-primary-foreground: #ffffff;
   }

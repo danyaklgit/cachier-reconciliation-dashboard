@@ -38,9 +38,9 @@ const getRowStyle = (nodeTag: string, depth: number) => {
       'text-sm font-semibold text-slate-800' :
       depth === 2 ?
         'text-sm font-semibold text-slate-700' :
-      depth === 3 ?
-        'text-xs font-semibold text-slate-600' :
-      'text-xs bg-white text-slate-500';
+        depth === 3 ?
+          'text-xs font-semibold text-slate-600' :
+          'text-xs bg-white text-slate-500';
   // const tagStyle = nodeTag === 'TOPIC' ? 'text-primary' : 'text-gray-900';
   const tagStyle = '';
 
@@ -164,7 +164,7 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
     },
     {
       id: 'recordsVerification',
-      header: 'Records Verification (%)',
+      header: () => (<span>Records Verification <span className="icon-saudi_riyal text-xs">&#xea;</span></span>),
       columns: [
         {
           id: 'recorded',
@@ -260,7 +260,7 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
     },
     {
       id: 'settlementVerification',
-      header: 'Settlement Verification (%)',
+      header: () => (<span>Settlement Verification <span className="icon-saudi_riyal text-xs">&#xea;</span></span>),
       columns: [
         {
           id: 'claimed',
@@ -394,6 +394,41 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
   console.log('Expanded rows:', table.getExpandedRowModel().rows);
   console.log('All rows:', table.getRowModel().rows);
 
+  const resolveHeaderClassName = (headerGroupId: string) => {
+    switch (headerGroupId) {
+      case '1_recordsVerification_2_recorded_recorded':
+      case '1_recordsVerification_2_verified_verified':
+
+      case '2_recorded_recorded':
+      case '2_verified_verified':
+      case '2_currentDayVariances_outstanding':
+      case '2_cumulativeVariances_cumOutstanding':
+      case 'recorded':
+      case 'verified':
+      case 'outstanding':
+      case 'exceptions':
+      case 'cumOutstanding':
+      case 'cumExceptions':
+        return 'bg-red-100';
+      case '1_settlementVerification_2_claimed_claimed':
+      case '2_claimed_claimed':
+      case '2_settled_settled':
+      case '2_settlementCurrentDayVariances_awaitingSettlement':
+      case '2_settlementCumulativeVariances_settlementCumAwaiting':
+      case 'claimed':
+      case 'settled':
+      case 'awaitingSettlement':
+      case 'settlementExceptions':
+      case 'settlementCumAwaiting':
+      case 'settlementCumExceptions':
+        return 'bg-blue-100';
+      case 'topic':
+        return 'bg-primary opacity-80';
+      default:
+        return 'bg-white';
+    }
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse" {...{
@@ -403,21 +438,24 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
       }}>
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id} className="bg-white">
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  colSpan={header.colSpan}
-                  className="border border-gray-300 border-x-gray-200 px-2 py-2 text-left font-semibold text-slate-800 text-sm"
-                // style={{ width: header.getSize() }}
-                >
-                  {header.isPlaceholder ? null : (
-                    <div className="text-center">
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                    </div>
-                  )}
-                </th>
-              ))}
+            <tr key={headerGroup.id} >
+              {headerGroup.headers.map((header) => {
+                console.log(header.id);
+                return (
+                  <th
+                    key={header.id}
+                    colSpan={header.colSpan}
+                    className={`border border-gray-300 border-x-gray-300 px-2 py-2 text-left font-semibold text-slate-900 text-sm ${resolveHeaderClassName(header.id)}`}
+                  // style={{ width: header.getSize() }}
+                  >
+                    {header.isPlaceholder ? null : (
+                      <div className="text-center">
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                      </div>
+                    )}
+                  </th>
+                )
+              })}
             </tr>
           ))}
         </thead>
