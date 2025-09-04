@@ -20,18 +20,19 @@ export default function DashboardSelection() {
   });
 
   const handleContinue = () => {
-    if (selectedArea && selectedOutlet && selectedDate) {
-      const area = areasData.Areas.find(a => a.AreaId.toString() === selectedArea);
-      const outlet = outletsData.Outlets.find(o => o.OutletId.toString() === selectedOutlet);
+    router.push(`/dashboard`)
+    // if (selectedArea && selectedOutlet && selectedDate) {
+    //   const area = areasData.Areas.find(a => a.AreaId.toString() === selectedArea);
+    //   const outlet = outletsData.Outlets.find(o => o.OutletId.toString() === selectedOutlet);
       
-      if (area && outlet) {
-        // Format date as DDMMYYYY to match the data file naming convention
-        const dateParts = selectedDate.split('-');
-        const formattedDate = `${dateParts[2]}${dateParts[1]}${dateParts[0]}`;
-        const fileName = `${area.AreaId}_${outlet.OutletId}_${formattedDate}.json`;
-        router.push(`/dashboard?data=${fileName}&area=${selectedArea}&outlet=${selectedOutlet}&date=${selectedDate}`);
-      }
-    }
+    //   if (area && outlet) {
+    //     // Format date as DDMMYYYY to match the data file naming convention
+    //     const dateParts = selectedDate.split('-');
+    //     const formattedDate = `${dateParts[2]}${dateParts[1]}${dateParts[0]}`;
+    //     const fileName = `${area.AreaId}_${outlet.OutletId}_${formattedDate}.json`;
+    //     router.push(`/dashboard?data=${fileName}&area=${selectedArea}&outlet=${selectedOutlet}&date=${selectedDate}`);
+    //   }
+    // }
   };
 
   return (
@@ -41,54 +42,12 @@ export default function DashboardSelection() {
           <CardTitle className="text-2xl font-bold text-gray-900">
             Cashier Reconciliation Dashboard
           </CardTitle>
-          <p className="text-gray-600">Select your configuration to continue</p>
+          {/* <p className="text-gray-600">Select your configuration to continue</p> */}
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="area">Area</Label>
-            <Select value={selectedArea} onValueChange={setSelectedArea}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select an area" />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                {areasData.Areas.map((area) => (
-                  <SelectItem key={area.AreaId} value={area.AreaId.toString()}>
-                    {area.AreaCode} - {area.AreaName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="outlet">Outlet</Label>
-            <Select value={selectedOutlet} onValueChange={setSelectedOutlet}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select an outlet" />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                {outletsData.Outlets.map((outlet) => (
-                  <SelectItem key={outlet.OutletId} value={outlet.OutletId.toString()}>
-                    {outlet.OutletCode} - {outlet.OutletName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="date">Business Day</Label>
-            <Input
-              id="date"
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-            />
-          </div>
 
           <Button
             onClick={handleContinue}
-            disabled={!selectedArea || !selectedOutlet || !selectedDate}
             className="w-full text-primary disabled:text-gray-500 bg-gray-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           >
             Continue to Dashboard
