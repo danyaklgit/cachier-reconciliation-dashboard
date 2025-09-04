@@ -20,6 +20,8 @@ interface MultiSelectProps {
   className?: string;
   disabled?: boolean;
   minSelections?: number;
+  showSelectedValues?: (selectedValues: string[]) => string;
+  maxSelections?: number;
 }
 
 export function MultiSelect({
@@ -29,7 +31,9 @@ export function MultiSelect({
   placeholder = "Select options",
   className = "w-48",
   disabled = false,
-  minSelections = 0
+  minSelections = 0,
+  showSelectedValues = (selectedValues: string[]) => `${selectedValues.length} selected`,
+  maxSelections = 0
 }: MultiSelectProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -59,16 +63,34 @@ export function MultiSelect({
       
       onSelectionChange(newSelection);
     } else {
-      // Select all filtered options
+      // Select all filtered options, but respect maxSelections
       const filteredValues = filteredOptions.map(option => option.value);
-      const newSelection = [...new Set([...selectedValues, ...filteredValues])];
+      let newSelection = [...new Set([...selectedValues, ...filteredValues])];
+      
+      // If maxSelections is set, limit the selection
+      if (maxSelections && newSelection.length > maxSelections) {
+        newSelection = newSelection.slice(0, maxSelections);
+      }
+      
       onSelectionChange(newSelection);
     }
   };
 
   const handleOptionChange = (optionValue: string, checked: boolean) => {
     if (checked) {
-      onSelectionChange([...selectedValues, optionValue]);
+      let newSelection: string[];
+      
+      // If maxSelections is 1, replace the current selection
+      if (maxSelections === 1) {
+        newSelection = [optionValue];
+      } else if (maxSelections && selectedValues.length >= maxSelections) {
+        // If we've reached the maximum, don't add more
+        return;
+      } else {
+        newSelection = [...selectedValues, optionValue];
+      }
+      
+      onSelectionChange(newSelection);
     } else {
       const newSelection = selectedValues.filter(value => value !== optionValue);
       
@@ -79,7 +101,6 @@ export function MultiSelect({
           newSelection.push(firstOption.value);
         }
       }
-      
       onSelectionChange(newSelection);
     }
   };
@@ -91,7 +112,7 @@ export function MultiSelect({
     !isAllSelected;
 
   const displayText = selectedValues.length > 0
-    ? `${selectedValues.length} selected`
+    ? showSelectedValues(selectedValues)
     : placeholder;
 
   return (
@@ -99,7 +120,9 @@ export function MultiSelect({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={`${className} justify-between text-left font-normal bg-white cursor-pointer text-primary`}
+          className={`${className} justify-between text-left font-normal bg-white cursor-pointer ${
+            selectedValues.length > 0 ? 'text-primary' : 'text-gray-500'
+          }`}
           disabled={disabled}
         >
           <span className="truncate">{displayText}</span>
