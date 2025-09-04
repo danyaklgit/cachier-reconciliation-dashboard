@@ -46,6 +46,35 @@ function DashboardContent() {
     return date.toISOString().split('T')[0];
   };
 
+  // Load saved state from localStorage on component mount
+  useEffect(() => {
+    const savedState = localStorage.getItem('dashboardState');
+    if (savedState) {
+      try {
+        const parsedState = JSON.parse(savedState);
+        if (parsedState.selectedArea) setSelectedArea(parsedState.selectedArea);
+        if (parsedState.selectedOutlet) setSelectedOutlet(parsedState.selectedOutlet);
+        if (parsedState.selectedBusinessDay) setSelectedBusinessDay(parsedState.selectedBusinessDay);
+        if (parsedState.selectedTopics) setSelectedTopics(parsedState.selectedTopics);
+        if (parsedState.filterState) setFilterState(parsedState.filterState);
+      } catch (error) {
+        console.error('Error loading saved dashboard state:', error);
+      }
+    }
+  }, []);
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    const stateToSave = {
+      selectedArea,
+      selectedOutlet,
+      selectedBusinessDay,
+      selectedTopics,
+      filterState
+    };
+    localStorage.setItem('dashboardState', JSON.stringify(stateToSave));
+  }, [selectedArea, selectedOutlet, selectedBusinessDay, selectedTopics, filterState]);
+
   // Load data when selections change
   useEffect(() => {
     if (selectedArea && selectedOutlet && selectedBusinessDay) {
@@ -166,13 +195,29 @@ function DashboardContent() {
                 <Image src="/logo_bwa_color.svg" alt="logo" width={60} height={50} />
               </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => router.push('/dashboard_testing')}
-              className="text-sm cursor-pointer hover:bg-gray-200"
-            >
-              Test Custom Data
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => router.push('/dashboard_testing')}
+                className="text-sm cursor-pointer hover:bg-gray-200"
+              >
+                Test Custom Data
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  localStorage.removeItem('dashboardState');
+                  setSelectedArea('');
+                  setSelectedOutlet('');
+                  setSelectedBusinessDay(new Date().toISOString().split('T')[0]);
+                  setSelectedTopics(['POS_CARDS']);
+                  setFilterState({});
+                }}
+                className="text-sm cursor-pointer hover:bg-gray-200"
+              >
+                Reset Settings
+              </Button>
+            </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
