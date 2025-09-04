@@ -4,8 +4,7 @@ import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { MultiSelect } from '@/components/ui/multi-select';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -14,7 +13,6 @@ import { DashboardData, Filter, FilterState } from '@/types';
 import topicsData from '@/data/topics.json';
 import filtersData from '@/data/filters.json';
 import Image from 'next/image';
-import { toast } from 'react-hot-toast';
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -253,73 +251,22 @@ function DashboardContent() {
           <div className="space-y-0 flex items-center gap-4">
             <div className="space-y-0 flex items-center gap-2">
               <Label className="text-lg font-bold text-gray-900">Topics</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-48 justify-between text-left font-normal bg-white cursor-pointer text-primary"
-                  >
-                    <span className="truncate">
-                      {selectedTopics.length > 0
-                        ? `${selectedTopics.map(topic => topicsData.Topics.find(t => t.TopicTag === topic)?.TopicLabel).join(', ')}`
-                        : 'Select topics'}
-                    </span>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64 p-0 bg-white">
-                  <div className="p-3 border-b">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Topics</span>
-                      {/* {selectedTopics.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          // Keep only the first topic when clearing
-                          const firstTopic = selectedTopics[0];
-                          setSelectedTopics([firstTopic]);
-                          setFilterState({});
-                        }}
-                        className="h-auto p-1 text-xs text-gray-500 hover:text-gray-700"
-                      >
-                        Clear all
-                      </Button>
-                    )} */}
-                    </div>
-                  </div>
-                  <div className="max-h-60 overflow-auto p-1">
-                    {topicsData.Topics.map((topic) => (
-                      <div key={topic.TopicTag} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-md">
-                        <Checkbox
-                          id={`topic-${topic.TopicTag}`}
-                          checked={selectedTopics.includes(topic.TopicTag)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedTopics(prev => [...prev, topic.TopicTag]);
-                            } else {
-                              // Prevent removing the last selected topic
-                              if (selectedTopics.length > 1) {
-                                setSelectedTopics(prev => prev.filter(t => t !== topic.TopicTag));
-                                setFilterState({});
-                              } else {
-                                toast.error('You need to select at least one topic', {
-                                  position: 'top-right',
-                                });
-                              }
-                            }
-                          }}
-                        />
-                        <label
-                          htmlFor={`topic-${topic.TopicTag}`}
-                          className="text-sm cursor-pointer flex-1"
-                        >
-                          {topic.TopicLabel}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <MultiSelect
+                options={topicsData.Topics.map(topic => ({
+                  value: topic.TopicTag,
+                  label: topic.TopicLabel
+                }))}
+                selectedValues={selectedTopics}
+                onSelectionChange={(values) => {
+                  setSelectedTopics(values);
+                  if (values.length === 0) {
+                    setFilterState({});
+                  }
+                }}
+                placeholder="Select topics"
+                className="w-48"
+                minSelections={1}
+              />
 
               {/* Selected topics display */}
               {/* {selectedTopics.length > 0 && (
@@ -377,95 +324,21 @@ function DashboardContent() {
 
 
               {/* Dynamic Filters */}
-              {availableFilters.map((filter) => {
-                const filterSelected = filterState[filter.FilterTag]?.length > 0
-                return (
+              {availableFilters.map((filter) => (
                 <div key={filter.FilterTag} className="space-y-2">
                   <Label>{filter.FilterLabel}</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-between text-left font-normal"
-                      >
-                        <span className={`truncate ${filterSelected ? 'text-primary' : 'text-gray-500'}`}>
-                          {filterSelected
-                            ? `${filterState[filter.FilterTag]?.length} selected`
-                            : `Select ${filter.FilterLabel}`}
-                        </span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-64 p-0 bg-white">
-                      <div className="p-3 border-b">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">{filter.FilterLabel}</span>
-                          {filterSelected && (
-                            <Button
-                              variant="ghost"
-                              size="sm" 
-                              onClick={() => handleFilterChange(filter.FilterTag, [])}
-                              className="h-auto p-1 text-xs text-gray-500 hover:text-gray-700"
-                            >
-                              Clear all
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                      <div className="max-h-60 overflow-auto p-1">
-                        {filter.FilterValues.map((value) => (
-                          <div key={value} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-md">
-                            <Checkbox
-                              id={`${filter.FilterTag}-${value}`}
-                              checked={filterState[filter.FilterTag]?.includes(value) || false}
-                              onCheckedChange={(checked) => {
-                                const currentValues = filterState[filter.FilterTag] || [];
-                                if (checked) {
-                                  handleFilterChange(filter.FilterTag, [...currentValues, value]);
-                                } else {
-                                  handleFilterChange(filter.FilterTag, currentValues.filter(v => v !== value));
-                                }
-                              }}
-                            />
-                            <label
-                              htmlFor={`${filter.FilterTag}-${value}`}
-                              className="text-sm cursor-pointer flex-1"
-                            >
-                              {value}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-
-                  {/* Selected values display */}
-                  {/* {filterState[filter.FilterTag]?.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {filterState[filter.FilterTag]?.map((value) => (
-                        <Badge
-                          key={value}
-                          variant="secondary"
-                          className="text-xs bg-primary/10 text-primary hover:bg-primary/20"
-                        >
-                          {value}
-                          <button
-                            onClick={() => {
-                              const currentValues = filterState[filter.FilterTag] || [];
-                              handleFilterChange(
-                                filter.FilterTag,
-                                currentValues.filter(v => v !== value)
-                              );
-                            }}
-                            className="ml-1 hover:bg-primary/20 rounded-full p-0.5"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )} */}
+                  <MultiSelect
+                    options={filter.FilterValues.map(value => ({
+                      value: value,
+                      label: value
+                    }))}
+                    selectedValues={filterState[filter.FilterTag] || []}
+                    onSelectionChange={(values) => handleFilterChange(filter.FilterTag, values)}
+                    placeholder={`Select ${filter.FilterLabel}`}
+                    className="w-full"
+                  />
                 </div>
-              )})}
+              ))}
 
               {/* Business Day */}
               {/* <div className="space-y-2">
@@ -507,7 +380,7 @@ function DashboardContent() {
                   <span><ChevronLeft className="h-4 w-4" /></span>
                   <span>{businessDay ? formatDate(getPreviousDay(businessDay)) : ''}</span>
                 </Button>
-                <div className="font-semibold flex flex-col items-center space-x-2">
+                <div className="font-semibold flex flex-col items-center space-x-2 gap-2">
                   <span className='text-sm'>Business Day:</span>
                   <Input
                   type="date"
