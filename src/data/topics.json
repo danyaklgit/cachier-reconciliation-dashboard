@@ -1,19 +1,39 @@
 {
   "Topics": [
     {
-      "TopicTag": "POS_CARDS",
-      "TopicLabel": "Pos Cards",
-      "AvailableFilterTags": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE"]
+      "Tag": "POS_CARDS",
+      "Label": "Pos Cards",
+      "AvailableFilterTags": [
+        "TERMINAL",
+        "DRIVER",
+        "PAYMENT_METHOD",
+        "ROUTE",
+        "CUSTOMER",
+        "BRAND",
+        "CUMULATIVE_FROM_DATE"
+      ]
     },
     {
-      "TopicTag": "CASH",
-      "TopicLabel": "Cash",
-      "AvailableFilterTags": ["DRIVER", "ROUTE"]
+      "Tag": "CASH",
+      "Label": "Cash",
+      "AvailableFilterTags": [
+        "DRIVER",
+        "ROUTE",
+        "CUSTOMER",
+        "BRAND",
+        "CUMULATIVE_FROM_DATE"
+      ]
     },
     {
-      "TopicTag": "WIRE_TRANSFERS",
-      "TopicLabel": "Wire Transfers",
-      "AvailableFilterTags": ["DRIVER", "ROUTE"]
+      "Tag": "WIRE_TRANSFERS",
+      "Label": "Wire Transfers",
+      "AvailableFilterTags": [
+        "DRIVER",
+        "ROUTE",
+        "CUSTOMER",
+        "BRAND",
+        "CUMULATIVE_FROM_DATE"
+      ]
     }
   ]
 }

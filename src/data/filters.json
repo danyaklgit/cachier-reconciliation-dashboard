@@ -1,24 +1,201 @@
 {
   "Filters": [
     {
-      "FilterTag": "TERMINAL",
-      "FilterLabel": "Terminal Id",
-      "FilterValues": ["98653265", "78845126", "98654512"]
+      "Tag": "TERMINAL",
+      "Label": "Terminal Id",
+      "Values": [
+        {
+          "Code": "98653265",
+          "Label": "98653265"
+        }
+      ]
     },
     {
-      "FilterTag": "DRIVER",
-      "FilterLabel": "Driver",
-      "FilterValues": ["Ali Mostafa", "Mohamad Taha"]
+      "Tag": "DRIVER",
+      "Label": "Driver",
+      "Values": [
+        {
+          "Code": "229300",
+          "Label": "Ali Mostafa"
+        },
+        {
+          "Code": "645529",
+          "Label": "Mohamad Taha"
+        },
+        {
+          "Code": "419083",
+          "Label": "Omar Khaled"
+        },
+        {
+          "Code": "954319",
+          "Label": "Hassan Ibrahim"
+        },
+        {
+          "Code": "655822",
+          "Label": "Karim Nasser"
+        },
+        {
+          "Code": "120586",
+          "Label": "Youssef Haddad"
+        },
+        {
+          "Code": "116077",
+          "Label": "Samir Mansour"
+        },
+        {
+          "Code": "357325",
+          "Label": "Adel Rahman"
+        },
+        {
+          "Code": "532306",
+          "Label": "Fadi Suleiman"
+        }
+      ]
     },
     {
-      "FilterTag": "PAYMENT_METHOD",
-      "FilterLabel": "Payment Method",
-      "FilterValues": ["Mada", "Visa", "Master Card", "American Express"]
+      "Tag": "PAYMENT_METHOD",
+      "Label": "Payment Method",
+      "Values": [
+        {
+          "Code": "MADA",
+          "Label": "Mada"
+        },
+        {
+          "Code": "VISA",
+          "Label": "Visa"
+        },
+        {
+          "Code": "MASTERCARD",
+          "Label": "Master Card"
+        },
+        {
+          "Code": "AMEX",
+          "Label": "American Express"
+        }
+      ]
     },
     {
-      "FilterTag": "ROUTE",
-      "FilterLabel": "Route",
-      "FilterValues": ["DC101-0001", "DC101-0002", "DC101-0003"]
+      "Tag": "ROUTE",
+      "Label": "Route",
+      "Values": [
+        {
+          "Code": "78157440",
+          "Label": "DC101-CA1-001"
+        },
+        {
+          "Code": "40408704",
+          "Label": "DC101-CA1-002"
+        },
+        {
+          "Code": "97010304",
+          "Label": "DC101-CA1-003"
+        },
+        {
+          "Code": "86030080",
+          "Label": "DC101-CA1-004"
+        },
+        {
+          "Code": "88152192",
+          "Label": "DC101-CA1-005"
+        },
+        {
+          "Code": "73725952",
+          "Label": "DC101-CA1-006"
+        },
+        {
+          "Code": "57972352",
+          "Label": "DC101-CA1-007"
+        },
+        {
+          "Code": "96147584",
+          "Label": "DC101-CA1-008"
+        }
+      ]
+    },
+    {
+      "Tag": "BRAND",
+      "Label": "Brand",
+      "Values": [
+        {
+          "Code": "7Up",
+          "Label": "7Up"
+        },
+        {
+          "Code": "Pepsi",
+          "Label": "Pepsi"
+        },
+        {
+          "Code": "Mirinda",
+          "Label": "Mirinda"
+        },
+        {
+          "Code": "Lipton Ice Tea",
+          "Label": "Lipton Ice Tea"
+        },
+        {
+          "Code": "Aquafina",
+          "Label": "Aquafina"
+        },
+        {
+          "Code": "Mountain Dew",
+          "Label": "Mountain Dew"
+        },
+        {
+          "Code": "Tropicana",
+          "Label": "Tropicana"
+        },
+        {
+          "Code": "Gatorade",
+          "Label": "Gatorade"
+        }
+      ]
+    },
+    {
+      "Tag": "CUSTOMER",
+      "Label": "Customer",
+      "Values": [
+        {
+          "Code": "5314335394",
+          "Label": "Panda Supermarket"
+        },
+        {
+          "Code": "8719673768",
+          "Label": "Carrefour Saudi Arabia"
+        },
+        {
+          "Code": "5889755049",
+          "Label": "Tamimi Markets"
+        },
+        {
+          "Code": "5108997801",
+          "Label": "Lulu Hypermarket"
+        },
+        {
+          "Code": "3176301198",
+          "Label": "Othaim Markets"
+        },
+        {
+          "Code": "4438721214",
+          "Label": "BinDawood Superstores"
+        },
+        {
+          "Code": "6567458881",
+          "Label": "Almarai Company"
+        },
+        {
+          "Code": "7500898637",
+          "Label": "Nestlé Saudi Arabia"
+        },
+        {
+          "Code": "5592982892",
+          "Label": "PepsiCo Saudi Arabia"
+        }
+      ]
+    },
+    {
+      "Tag": "CUMULATIVE_FROM_DATE",
+      "Label": "Cumulative From Date",
+      "Values": null
     }
   ]
 }

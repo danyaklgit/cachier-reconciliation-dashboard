@@ -92,15 +92,15 @@ function DashboardContent() {
 
   const updateAvailableFilters = useCallback(() => {
     const selectedTopicObjects = topicsData.Topics.filter(topic =>
-      selectedTopics.includes(topic.TopicTag)
+      selectedTopics.includes(topic.Tag)
     );
 
     const availableFilterTags = selectedTopicObjects.flatMap(topic => topic.AvailableFilterTags);
     const uniqueFilterTags = [...new Set(availableFilterTags)];
 
     const relevantFilters = filtersData.Filters.filter(filter =>
-      uniqueFilterTags.includes(filter.FilterTag)
-    );
+      uniqueFilterTags.includes(filter.Tag) && filter.Values
+    ) as Filter[];
 
     setAvailableFilters(relevantFilters);
 
@@ -186,9 +186,9 @@ function DashboardContent() {
 
   const resolveAppliesToTopic = (filterTag: string) => {
     return topicsData.Topics.filter(topic => topic.AvailableFilterTags.includes(filterTag))?.map(topic => {
-      return <div key={topic.TopicTag} className="text-xs text-primary font-medium">
-        {/* {topic.TopicLabel} */}
-        {topic.TopicTag === 'POS_CARDS' && (
+      return <div key={topic.Tag} className="text-xs text-primary font-medium">
+        {/* {topic.Label} */}
+        {topic.Tag === 'POS_CARDS' && (
           <Tooltip>
             <TooltipTrigger>
               <CreditCard className="w-4 h-4" />
@@ -197,7 +197,7 @@ function DashboardContent() {
           </Tooltip>
 
         )}
-        {topic.TopicTag === 'CASH' && (
+        {topic.Tag === 'CASH' && (
           <Tooltip>
             <TooltipTrigger>
               <span className="icon-saudi_riyal text-sm w-4 h-4">&#xea;</span>
@@ -205,7 +205,7 @@ function DashboardContent() {
             <TooltipContent>This filter applies to Cash</TooltipContent>
           </Tooltip>
         )}
-        {topic.TopicTag === 'WIRE_TRANSFERS' && (
+        {topic.Tag === 'WIRE_TRANSFERS' && (
           <Tooltip>
             <TooltipTrigger>
               <LandmarkIcon className="w-4 h-4" />
@@ -308,12 +308,31 @@ function DashboardContent() {
                   showSelectedValues={(selectedValues) => { return `${outletLiteral}: ${selectedValues.map(value => outletsData.Outlets.find(outlet => outlet.OutletId.toString() === value)?.OutletName).join(', ')}` }}
                 />
               </div>
+                             <div className="space-y-2">
+                 <MultiSelect
+                   options={topicsData.Topics.map(topic => ({
+                     value: topic.Tag,
+                     label: topic.Label
+                   }))}
+                   selectedValues={selectedTopics}
+                   onSelectionChange={(values) => {
+                     setSelectedTopics(values);
+                     if (values.length === 0) {
+                       setFilterState({});
+                     }
+                   }}
+                   placeholder="Select topics"
+                   className="w-fit"
+                   minSelections={1}
+                   showSelectedValues={(selectedValues) => { return `Topics: ${selectedValues.map(value => topicsData.Topics.find(topic => topic.Tag === value)?.Label).join(', ')}` }}
+                 />
+               </div>
             </div>
 
 
 
-            <div className="space-y-2 flex items-bottom justify-end gap-2 justify-self-end">
-              {/* <Label className="text-lg font-bold text-gray-900">Topics</Label> */}
+            {/* <div className="space-y-2 flex items-bottom justify-end gap-2 justify-self-end">
+              
 
               <MultiSelect
                 options={topicsData.Topics.map(topic => ({
@@ -332,7 +351,7 @@ function DashboardContent() {
                 minSelections={1}
                 showSelectedValues={(selectedValues) => { return `Topics: ${selectedValues.map(value => topicsData.Topics.find(topic => topic.TopicTag === value)?.TopicLabel).join(', ')}` }}
               />
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -382,24 +401,24 @@ function DashboardContent() {
           <CardContent className={`flex flex-col ${Object.keys(filterState).length > 0 ? 'gap-4' : 'gap-1'}`}>
 
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
 
 
               {/* Dynamic Filters */}
               {availableFilters.map((filter) => (
-                <div key={filter.FilterTag} className="space-y-2">
+                <div key={filter.Tag} className="space-y-2">
                   <Label className="flex text-sm items-end gap-2">
-                    <span className="text-sm pt-1">{filter.FilterLabel}</span>
-                    <div className="text-xs flex items-end gap-2 font-medium text-primary opacity-50 group-hover:opacity-100 duration-300 transition-all">{resolveAppliesToTopic(filter.FilterTag)}</div>
+                    <span className="text-sm pt-1">{filter.Label}</span>
+                    <div className="text-xs flex items-end gap-2 font-medium text-primary opacity-50 group-hover:opacity-100 duration-300 transition-all">{resolveAppliesToTopic(filter.Tag)}</div>
                   </Label>
                   <MultiSelect
-                    options={filter.FilterValues.map(value => ({
-                      value: value,
-                      label: value
-                    }))}
-                    selectedValues={filterState[filter.FilterTag] || []}
-                    onSelectionChange={(values) => handleFilterChange(filter.FilterTag, values)}
-                    placeholder={`Select ${filter.FilterLabel}`}
+                    options={filter.Values?.map(value => ({
+                      value: value.Code,
+                      label: value.Label
+                    })) || []}
+                    selectedValues={filterState[filter.Tag] || []}
+                    onSelectionChange={(values) => handleFilterChange(filter.Tag, values)}
+                    placeholder={`Select ${filter.Label}`}
                     className="w-full"
                   />
                 </div>
@@ -407,15 +426,21 @@ function DashboardContent() {
             </div>
             <div className="flex flex-wrap gap-2">
               {/* selected filters */}
-              {Object.keys(filterState).map((key) => (
-                <Badge key={key} className="bg-gray-100 rounded-md p-1 px-2 group">
-                  <Label>{filtersData.Filters.find(filter => filter.FilterTag === key)?.FilterLabel}</Label>
-                  <p>{filterState[key].map(value => filtersData.Filters.find(filter => filter.FilterTag === key)?.FilterValues.find(v => v === value)).join(', ')}</p>
-                  <Button variant="ghost" size="icon" onClick={() => removeFilter(key)} className="ml-2 group-hover:bg-gray-200 hover:text-red-700 cursor-pointer">
-                    <X className="w-4 h-4" />
-                  </Button>
-                </Badge>
-              ))}
+              {Object.keys(filterState).map((key) => {
+                const filter = filtersData.Filters.find(f => f.Tag === key);
+                return (
+                  <Badge key={key} className="bg-gray-100 rounded-md p-1 px-2 group">
+                    <Label>{filter?.Label}</Label>
+                    <p>{filterState[key].map(code => {
+                      const value = filter?.Values?.find(v => v.Code === code);
+                      return value?.Label || code;
+                    }).join(', ')}</p>
+                    <Button variant="ghost" size="icon" onClick={() => removeFilter(key)} className="ml-2 group-hover:bg-gray-200 hover:text-red-700 cursor-pointer">
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </Badge>
+                );
+              })}
             </div>
           </CardContent>
         </Card>}
@@ -440,29 +465,29 @@ function DashboardContent() {
                 <p className="text-sm text-gray-500">
                   <span className="font-medium">Outlet:</span> {selectedOutlet || 'Not selected'}
                 </p>
-                <div className="flex flex-col md:flex-row gap-2 md:gap-0 items-end justify-center space-x-10 mt-2">
+                <div className="flex flex-col md:flex-row gap-2 md:gap-0 items-end justify-center space-x-10 mt-0">
                   <Button
                     variant="outline"
                     onClick={() => navigateToDate('prev')}
-                    className="flex items-center space-x-2 cursor-pointer hover:bg-gray-200"
+                    className="flex items-center space-x-2 cursor-pointer text-slate-400 hover:text-slate-600 hover:bg-gray-200"
                     disabled={!selectedBusinessDay}
                   >
                     <span><ChevronLeft className="h-4 w-4" /></span>
                     <span>{selectedBusinessDay ? formatDate(getPreviousDay(selectedBusinessDay)) : ''}</span>
                   </Button>
-                  <div className="font-semibold flex flex-col items-center space-x-2 gap-2">
+                  <div className="font-semibold flex  items-center space-x-2 gap-2">
                     <span className='text-sm'>Business Day:</span>
                     <Input
                       type="date"
                       value={selectedBusinessDay || ''}
                       onChange={(e) => setSelectedBusinessDay(e.target.value)}
-                      className="w-auto"
+                      className="w-auto text-slate-900 text-semibold"
                     />
                   </div>
                   <Button
                     variant="outline"
                     onClick={() => navigateToDate('next')}
-                    className="flex items-center space-x-2 cursor-pointer hover:bg-gray-200"
+                    className="flex items-center space-x-2 cursor-pointer text-slate-400 hover:text-slate-600 hover:bg-gray-200"
                     disabled={!selectedBusinessDay}
                   >
                     <span>{selectedBusinessDay ? formatDate(getNextDay(selectedBusinessDay)) : ''}</span>

@@ -45,14 +45,19 @@ export interface DashboardData {
 }
 
 export interface Filter {
-  FilterTag: string;
-  FilterLabel: string;
-  FilterValues: string[];
+  Tag: string;
+  Label: string;
+  Values: FilterValue[];
+}
+
+export interface FilterValue {
+  Code: string;
+  Label: string;
 }
 
 export interface Topic {
-  TopicTag: string;
-  TopicLabel: string;
+  Tag: string;
+  Label: string;
   AvailableFilterTags: string[];
 }
 
