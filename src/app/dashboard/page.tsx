@@ -45,12 +45,13 @@ function DashboardContent() {
   const [isHierarchyModalOpen, setIsHierarchyModalOpen] = useState(false);
   const [draggedItem, setDraggedItem] = useState<{ topicTag: string; index: number } | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<{ topicTag: string; index: number } | null>(null);
+  const [tempTopicsHierarchy, setTempTopicsHierarchy] = useState<{ [topicTag: string]: string[] }>({});
   const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
   const [tenantsLoading, setTenantsLoading] = useState(false);
 
   // New selection states
-  const [selectedArea, setSelectedArea] = useState<string>('');
-  const [selectedOutlet, setSelectedOutlet] = useState<string>('');
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [selectedOutlets, setSelectedOutlets] = useState<string[]>([]);
   const [selectedTenant, setSelectedTenant] = useState<string>('');
   const [selectedBusinessDay, setSelectedBusinessDay] = useState<string>(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -122,9 +123,9 @@ function DashboardContent() {
 
   const handleDrop = (e: React.DragEvent, targetTopicTag: string, targetIndex: number) => {
     e.preventDefault();
-
+    
     if (!draggedItem) return;
-
+    
     const { topicTag: sourceTopicTag, index: sourceIndex } = draggedItem;
 
     // Only allow dropping within the same topic
@@ -138,15 +139,15 @@ function DashboardContent() {
       return;
     }
 
-    const newHierarchies = { ...topicsHierarchy };
+    const newHierarchies = { ...tempTopicsHierarchy };
     const sourceHierarchy = [...newHierarchies[sourceTopicTag]];
-
+    
     // Reordering within the same topic
     const [movedItem] = sourceHierarchy.splice(sourceIndex, 1);
     sourceHierarchy.splice(targetIndex, 0, movedItem);
     newHierarchies[sourceTopicTag] = sourceHierarchy;
 
-    saveTopicsHierarchy(newHierarchies);
+    setTempTopicsHierarchy(newHierarchies);
     handleDragEnd();
   };
 
@@ -168,9 +169,14 @@ function DashboardContent() {
 
   const getAvailableOutlets = useCallback(() => {
     const areas = getAvailableAreas();
-    const selectedAreaObj = areas.find(area => area.AreaId.toString() === selectedArea);
-    return selectedAreaObj?.Outlets || [];
-  }, [getAvailableAreas, selectedArea]);
+    const selectedAreaObjs = areas.filter(area => selectedAreas.includes(area.AreaId.toString()));
+    const allOutlets = selectedAreaObjs.flatMap(area => area.Outlets);
+    // Remove duplicates based on OutletId
+    const uniqueOutlets = allOutlets.filter((outlet, index, self) => 
+      index === self.findIndex(o => o.OutletId === outlet.OutletId)
+    );
+    return uniqueOutlets;
+  }, [getAvailableAreas, selectedAreas]);
 
   const getTenantCode = useCallback(() => {
     const tenant = getSelectedTenant();
@@ -203,9 +209,68 @@ function DashboardContent() {
       "POSCARDS": ["DRIVER", "ROUTE"]
     };
 
-    const newHierarchies = { ...topicsHierarchy };
+    const newHierarchies = { ...tempTopicsHierarchy };
     newHierarchies[topicTag] = defaultHierarchies[topicTag] || [];
-    saveTopicsHierarchy(newHierarchies);
+    setTempTopicsHierarchy(newHierarchies);
+  };
+
+  // Handle opening the hierarchy modal
+  const handleOpenHierarchyModal = () => {
+    setTempTopicsHierarchy({ ...topicsHierarchy });
+    setIsHierarchyModalOpen(true);
+  };
+
+  // Handle closing the hierarchy modal and applying changes
+  const handleCloseHierarchyModal = () => {
+    saveTopicsHierarchy(tempTopicsHierarchy);
+    setIsHierarchyModalOpen(false);
+  };
+
+  // Handle canceling changes
+  const handleCancelHierarchyModal = () => {
+    setTempTopicsHierarchy({});
+    setIsHierarchyModalOpen(false);
+  };
+
+  // Get available filter tags for a topic (excluding default ones and CUMULATIVE_FROM_DATE)
+  const getAvailableFilterTagsForTopic = (topicTag: string) => {
+    const topic = topicsData.Topics.find(t => t.Tag === topicTag);
+    if (!topic) return [];
+    
+    const defaultHierarchies: { [key: string]: string[] } = {
+      "CASH": ["DRIVER", "ROUTE"],
+      "CHECKS": ["DRIVER", "ROUTE"],
+      "CREDIT": ["DRIVER", "ROUTE"],
+      "POSCARDS": ["DRIVER", "ROUTE"]
+    };
+    
+    const defaultTags = defaultHierarchies[topicTag] || [];
+    const currentHierarchy = tempTopicsHierarchy[topicTag] || [];
+    
+    return topic.AvailableFilterTags.filter(tag => 
+      !defaultTags.includes(tag) && 
+      !currentHierarchy.includes(tag) && 
+      tag !== 'CUMULATIVE_FROM_DATE'
+    );
+  };
+
+  // Add a filter tag to hierarchy
+  const addFilterToHierarchy = (topicTag: string, filterTag: string) => {
+    const newHierarchies = { ...tempTopicsHierarchy };
+    if (!newHierarchies[topicTag]) {
+      newHierarchies[topicTag] = [];
+    }
+    newHierarchies[topicTag] = [...newHierarchies[topicTag], filterTag];
+    setTempTopicsHierarchy(newHierarchies);
+  };
+
+  // Remove a filter tag from hierarchy
+  const removeFilterFromHierarchy = (topicTag: string, filterTag: string) => {
+    const newHierarchies = { ...tempTopicsHierarchy };
+    if (newHierarchies[topicTag]) {
+      newHierarchies[topicTag] = newHierarchies[topicTag].filter(tag => tag !== filterTag);
+    }
+    setTempTopicsHierarchy(newHierarchies);
   };
 
   // Helper functions to get previous and next day dates
@@ -227,8 +292,11 @@ function DashboardContent() {
     if (savedState) {
       try {
         const parsedState = JSON.parse(savedState);
-        if (parsedState.selectedArea) setSelectedArea(parsedState.selectedArea);
-        if (parsedState.selectedOutlet) setSelectedOutlet(parsedState.selectedOutlet);
+        if (parsedState.selectedAreas) setSelectedAreas(parsedState.selectedAreas);
+        if (parsedState.selectedOutlets) setSelectedOutlets(parsedState.selectedOutlets);
+        // Handle backward compatibility with single selections
+        if (parsedState.selectedArea && !parsedState.selectedAreas) setSelectedAreas([parsedState.selectedArea]);
+        if (parsedState.selectedOutlet && !parsedState.selectedOutlets) setSelectedOutlets([parsedState.selectedOutlet]);
         if (parsedState.selectedTenant) setSelectedTenant(parsedState.selectedTenant);
         if (parsedState.selectedBusinessDay) setSelectedBusinessDay(parsedState.selectedBusinessDay);
         if (parsedState.selectedTopics) setSelectedTopics(parsedState.selectedTopics);
@@ -245,55 +313,63 @@ function DashboardContent() {
   useEffect(() => {
     if (tenantsData.Tenants.length > 0 && selectedTenant) {
       const availableAreas = getAvailableAreas();
-      const currentAreaExists = availableAreas.some(area => area.AreaId.toString() === selectedArea);
-      if (!currentAreaExists) {
-        setSelectedArea('');
-        setSelectedOutlet('');
-      } else if (selectedArea) {
+      const validAreas = selectedAreas.filter(areaId => 
+        availableAreas.some(area => area.AreaId.toString() === areaId)
+      );
+      if (validAreas.length !== selectedAreas.length) {
+        setSelectedAreas(validAreas);
+        setSelectedOutlets([]); // Clear outlets if areas changed
+      } else if (validAreas.length > 0) {
         const availableOutlets = getAvailableOutlets();
-        const currentOutletExists = availableOutlets.some(outlet => outlet.OutletId.toString() === selectedOutlet);
-        if (!currentOutletExists) {
-          setSelectedOutlet('');
+        const validOutlets = selectedOutlets.filter(outletId => 
+          availableOutlets.some(outlet => outlet.OutletId.toString() === outletId)
+        );
+        if (validOutlets.length !== selectedOutlets.length) {
+          setSelectedOutlets(validOutlets);
         }
       }
     }
-  }, [tenantsData.Tenants, selectedTenant, selectedArea, selectedOutlet, getAvailableAreas, getAvailableOutlets]);
+  }, [tenantsData.Tenants, selectedTenant, selectedAreas, selectedOutlets, getAvailableAreas, getAvailableOutlets]);
 
-  // Clear area and outlet when tenant changes (only after initial load and not during validation)
+  // Clear areas and outlets when tenant changes (only after initial load and not during validation)
   useEffect(() => {
     if (isInitialLoadComplete && selectedTenant && tenantsData.Tenants.length > 0) {
       const availableAreas = getAvailableAreas();
-      const currentAreaExists = availableAreas.some(area => area.AreaId.toString() === selectedArea);
-      if (!currentAreaExists) {
-        setSelectedArea('');
-        setSelectedOutlet('');
+      const validAreas = selectedAreas.filter(areaId => 
+        availableAreas.some(area => area.AreaId.toString() === areaId)
+      );
+      if (validAreas.length !== selectedAreas.length) {
+        setSelectedAreas(validAreas);
+        setSelectedOutlets([]); // Clear outlets if areas changed
       }
     }
-  }, [isInitialLoadComplete, selectedTenant, getAvailableAreas, selectedArea, tenantsData.Tenants.length]);
+  }, [isInitialLoadComplete, selectedTenant, getAvailableAreas, selectedAreas, tenantsData.Tenants.length]);
 
-  // Clear outlet when area changes (only after initial load and not during validation)
+  // Clear outlets when areas change (only after initial load and not during validation)
   useEffect(() => {
-    if (isInitialLoadComplete && selectedArea && tenantsData.Tenants.length > 0) {
+    if (isInitialLoadComplete && selectedAreas.length > 0 && tenantsData.Tenants.length > 0) {
       const availableOutlets = getAvailableOutlets();
-      const currentOutletExists = availableOutlets.some(outlet => outlet.OutletId.toString() === selectedOutlet);
-      if (!currentOutletExists) {
-        setSelectedOutlet('');
+      const validOutlets = selectedOutlets.filter(outletId => 
+        availableOutlets.some(outlet => outlet.OutletId.toString() === outletId)
+      );
+      if (validOutlets.length !== selectedOutlets.length) {
+        setSelectedOutlets(validOutlets);
       }
     }
-  }, [isInitialLoadComplete, selectedArea, getAvailableOutlets, selectedOutlet, tenantsData.Tenants.length]);
+  }, [isInitialLoadComplete, selectedAreas, getAvailableOutlets, selectedOutlets, tenantsData.Tenants.length]);
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
     const stateToSave = {
-      selectedArea,
-      selectedOutlet,
+      selectedAreas,
+      selectedOutlets,
       selectedTenant,
       selectedBusinessDay,
       selectedTopics,
       filterState
     };
     localStorage.setItem('dashboardState', JSON.stringify(stateToSave));
-  }, [selectedArea, selectedOutlet, selectedTenant, selectedBusinessDay, selectedTopics, filterState]);
+  }, [selectedAreas, selectedOutlets, selectedTenant, selectedBusinessDay, selectedTopics, filterState]);
 
 
   const updateAvailableFilters = useCallback(() => {
@@ -432,8 +508,8 @@ function DashboardContent() {
       
         const requestJson = {
           TenantCode: getTenantCode(),
-          AreaIds: selectedArea ? [selectedArea] : [],
-          OutletIds: selectedOutlet ? [selectedOutlet] : [],
+          AreaIds: selectedAreas,
+          OutletIds: selectedOutlets,
           BusinessDay: selectedBusinessDay,
           Topics: selectedTopics,
           Filters: Object.keys(filterState).map(filterTag => ({
@@ -470,17 +546,17 @@ function DashboardContent() {
     } finally {
       setLoading(false);
     }
-  }, [selectedTopics, topicsHierarchy, selectedBusinessDay, selectedArea, selectedOutlet, filterState, getTenantCode]);
+  }, [selectedTopics, topicsHierarchy, selectedBusinessDay, selectedAreas, selectedOutlets, filterState, getTenantCode]);
 
   // Load data when selections change (only after initial load is complete)
   useEffect(() => {
-    if (isInitialLoadComplete && selectedArea && selectedOutlet && selectedTenant && selectedBusinessDay && selectedTopics.length > 0) {
+    if (isInitialLoadComplete && selectedAreas.length > 0 && selectedOutlets.length > 0 && selectedTenant && selectedBusinessDay && selectedTopics.length > 0) {
       loadDashboardData();
     } else if (isInitialLoadComplete) {
       setDashboardData(null);
       setLoading(false); // Stop loading when selections are incomplete
     }
-  }, [isInitialLoadComplete, selectedArea, selectedOutlet, selectedTenant, selectedBusinessDay, selectedTopics, filterState, topicsHierarchy, loadDashboardData]);
+  }, [isInitialLoadComplete, selectedAreas, selectedOutlets, selectedTenant, selectedBusinessDay, selectedTopics, filterState, topicsHierarchy, loadDashboardData]);
 
   const handleFilterChange = (filterTag: string, values: string[]) => {
     // check if values is empty remove the filter key from the object
@@ -598,8 +674,8 @@ function DashboardContent() {
                 variant="ghost"
                 onClick={() => {
                   localStorage.removeItem('dashboardState');
-                  setSelectedArea('');
-                  setSelectedOutlet('');
+                    setSelectedAreas([]);
+                    setSelectedOutlets([]);
                   setSelectedTenant('');
                   setSelectedBusinessDay(new Date().toISOString().split('T')[0]);
                   setSelectedTopics(['POSCARDS']);
@@ -662,15 +738,19 @@ function DashboardContent() {
                     value: area.AreaId.toString(),
                     label: `${area.AreaCode} - ${area.AreaName}`
                   }))}
-                  selectedValues={selectedArea ? [selectedArea] : []}
-                  onSelectionChange={(values) => setSelectedArea(values[0] || '')}
+                  selectedValues={selectedAreas}
+                  onSelectionChange={(values) => setSelectedAreas(values)}
                   placeholder={`Select ${areaLiteral}`}
                   className="w-fit"
                   minSelections={0}
-                  maxSelections={1}
+                  maxSelections={10}
                   showSelectedValues={(selectedValues) => { 
-                    const area = getAvailableAreas().find(area => area.AreaId.toString() === selectedValues[0]);
-                    return `${areaLiteral}: ${area?.AreaName || ''}`;
+                    const areas = getAvailableAreas().filter(area => selectedValues.includes(area.AreaId.toString()));
+                    if (areas.length <= 2) {
+                      return `${areaLiteral}: ${areas.map(area => area.AreaName).join(', ')}`;
+                    } else {
+                      return `${areaLiteral}: ${areas.slice(0, 2).map(area => area.AreaName).join(', ')} +${areas.length - 2} more`;
+                    }
                   }}
                 />
               </div>
@@ -680,15 +760,19 @@ function DashboardContent() {
                     value: outlet.OutletId.toString(),
                     label: `${outlet.OutletCode} - ${outlet.OutletName}`
                   }))}
-                  selectedValues={selectedOutlet ? [selectedOutlet] : []}
-                  onSelectionChange={(values) => setSelectedOutlet(values[0] || '')}
+                  selectedValues={selectedOutlets}
+                  onSelectionChange={(values) => setSelectedOutlets(values)}
                   placeholder={`Select ${outletLiteral}`}
                   className="w-fit"
                   minSelections={0}
-                  maxSelections={1}
+                  maxSelections={10}
                   showSelectedValues={(selectedValues) => { 
-                    const outlet = getAvailableOutlets().find(outlet => outlet.OutletId.toString() === selectedValues[0]);
-                    return `${outletLiteral}: ${outlet?.OutletName || ''}`;
+                    const outlets = getAvailableOutlets().filter(outlet => selectedValues.includes(outlet.OutletId.toString()));
+                    if (outlets.length <= 2) {
+                      return `${outletLiteral}: ${outlets.map(outlet => outlet.OutletName).join(', ')}`;
+                    } else {
+                      return `${outletLiteral}: ${outlets.slice(0, 2).map(outlet => outlet.OutletName).join(', ')} +${outlets.length - 2} more`;
+                    }
                   }}
                 />
               </div>
@@ -719,7 +803,13 @@ function DashboardContent() {
                 </div>
               )}
             </div>
-            {!filtersLoading && <Dialog open={isHierarchyModalOpen} onOpenChange={setIsHierarchyModalOpen}>
+            {!filtersLoading && <Dialog open={isHierarchyModalOpen} onOpenChange={(open) => {
+              if (open) {
+                handleOpenHierarchyModal();
+              } else {
+                handleCancelHierarchyModal();
+              }
+            }}>
               <DialogTrigger asChild>
                 <Button
                   // variant="default"
@@ -743,35 +833,57 @@ function DashboardContent() {
                     </span>
                   </DialogTitle>
                 </DialogHeader>
-                <div className="space-y-6">
-                  {selectedTopics.map((topicTag) => {
-                    const topic = topicsData.Topics.find(t => t.Tag === topicTag);
-                    const hierarchy = topicsHierarchy[topicTag] || [];
-
-                    return (
-                      <div key={topicTag} className="border rounded-lg p-4">
-                        <h3 className="text-md font-semibold mb-3 flex items-center justify-between">
-                          <div className={`
-                            flex items-center gap-2
-                            ${hasHierarchyChanged(topicTag) ? 'text-primary' : 'text-gray-900'}
-                          `}>
-                            {topic?.Label || topicTag}
-                            <span className="text-xs text-gray-500 font-normal">
-                              ({hierarchy.length} levels)
-                            </span>
-                          </div>
-                          {hasHierarchyChanged(topicTag) && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => resetTopicHierarchy(topicTag)}
-                              className="text-xs h-7 px-2"
-                            >
-                              <RotateCcw className="w-3 h-3 mr-1" />
-                              Reset
-                            </Button>
-                          )}
-                        </h3>
+                        <div className="space-y-6">
+                          {selectedTopics.map((topicTag) => {
+                            const topic = topicsData.Topics.find(t => t.Tag === topicTag);
+                            const hierarchy = tempTopicsHierarchy[topicTag] || topicsHierarchy[topicTag] || [];
+                            const availableFilters = getAvailableFilterTagsForTopic(topicTag);
+                            
+                            return (
+                              <div key={topicTag} className="border rounded-lg p-4">
+                                <h3 className="text-md font-semibold mb-3 flex items-center justify-between">
+                                  <div className={`
+                                    flex items-center gap-2
+                                    ${hasHierarchyChanged(topicTag) ? 'text-primary' : 'text-gray-900'}
+                                  `}>
+                                    {topic?.Label || topicTag}
+                                    <span className="text-xs text-gray-500 font-normal">
+                                      ({hierarchy.length} levels)
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {availableFilters.length > 0 && (
+                                      <select
+                                        className="text-xs border rounded px-2 py-1"
+                                        onChange={(e) => {
+                                          if (e.target.value) {
+                                            addFilterToHierarchy(topicTag, e.target.value);
+                                            e.target.value = '';
+                                          }
+                                        }}
+                                        defaultValue=""
+                                      >
+                                        <option value="">Add filter...</option>
+                                        {availableFilters.map(filterTag => (
+                                          <option key={filterTag} value={filterTag}>
+                                            {getFilterLabel(filterTag)}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    )}
+                                    {hasHierarchyChanged(topicTag) && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => resetTopicHierarchy(topicTag)}
+                                        className="text-xs h-7 px-2"
+                                      >
+                                        <RotateCcw className="w-3 h-3 mr-1" />
+                                        Reset
+                                      </Button>
+                                    )}
+                                  </div>
+                                </h3>
                         <div className="space-y-2">
                           {hierarchy.map((filterTag, index) => {
                             const isDragged = draggedItem?.topicTag === topicTag && draggedItem?.index === index;
@@ -813,6 +925,17 @@ function DashboardContent() {
                                   <span className={`text-sm flex-1 ${getMixedFontClass()} ${isDragged ? 'text-blue-700' : ''}`}>
                                     {getFilterLabel(filterTag)}
                                   </span>
+                                  {/* Remove button for custom filters */}
+                                  {!["DRIVER", "ROUTE"].includes(filterTag) && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removeFilterFromHierarchy(topicTag, filterTag)}
+                                      className="text-xs h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </Button>
+                                  )}
                                 </div>
                               </div>
                             );
@@ -837,9 +960,24 @@ function DashboardContent() {
                       </div>
                     );
                   })}
-                </div>
-              </DialogContent>
-            </Dialog>}
+                        </div>
+                        <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+                          <Button
+                            variant="outline"
+                            onClick={handleCancelHierarchyModal}
+                            className="text-xs"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={handleCloseHierarchyModal}
+                            className="text-xs"
+                          >
+                            Save Changes
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>}
 
 
 
@@ -892,7 +1030,7 @@ function DashboardContent() {
           </div>
         </div> */}
 
-        {dashboardData && (selectedArea && selectedOutlet && selectedBusinessDay) && (
+        {dashboardData && (selectedAreas.length > 0 && selectedOutlets.length > 0 && selectedBusinessDay) && (
           filtersLoading ? (
             <Card className="mb-4 p-4 bg-white">
               <CardHeader>
@@ -995,7 +1133,7 @@ function DashboardContent() {
         )}
 
         {/* No Data Message */}
-        {!dashboardData && (selectedArea && selectedOutlet && selectedBusinessDay) && (
+        {!dashboardData && (selectedAreas.length > 0 && selectedOutlets.length > 0 && selectedBusinessDay) && (
           <Card className="mb-8 p-4 bg-white">
             <CardContent className="p-6 text-center">
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -1009,10 +1147,10 @@ function DashboardContent() {
               </p>
               <div className="space-y-3">
                 <p className="text-sm text-gray-500">
-                  <span className="font-medium">Area:</span> {selectedArea || 'Not selected'}
+                  <span className="font-medium">Areas:</span> {selectedAreas.length > 0 ? selectedAreas.join(', ') : 'Not selected'}
                 </p>
                 <p className="text-sm text-gray-500">
-                  <span className="font-medium">Outlet:</span> {selectedOutlet || 'Not selected'}
+                  <span className="font-medium">Outlets:</span> {selectedOutlets.length > 0 ? selectedOutlets.join(', ') : 'Not selected'}
                 </p>
                 <div className="flex flex-col md:flex-row gap-2 md:gap-0 items-end justify-center space-x-10 mt-0">
                   <Button
@@ -1048,7 +1186,7 @@ function DashboardContent() {
           </Card>
         )}
 
-        {!dashboardData && (!selectedArea || !selectedOutlet || !selectedBusinessDay) && (<Card className="mb-8 p-4 bg-white">
+        {!dashboardData && (selectedAreas.length === 0 || selectedOutlets.length === 0 || !selectedBusinessDay) && (<Card className="mb-8 p-4 bg-white">
           <CardContent className="p-3 text-center">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
