@@ -59,6 +59,7 @@ export interface Topic {
   Tag: string;
   Label: string;
   AvailableFilterTags: string[];
+  DefaultFilterHierarchy: string[];
 }
 
 export interface Area {
