@@ -31,6 +31,7 @@ function DashboardContent() {
   const [isHierarchyModalOpen, setIsHierarchyModalOpen] = useState(false);
   const [draggedItem, setDraggedItem] = useState<{ topicTag: string; index: number } | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<{ topicTag: string; index: number } | null>(null);
+  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
 
   // New selection states
   const [selectedArea, setSelectedArea] = useState<string>('');
@@ -164,10 +165,10 @@ function DashboardContent() {
   // Check if hierarchy has changed from default
   const hasHierarchyChanged = (topicTag: string) => {
     const defaultHierarchies: { [key: string]: string[] } = {
-      "CASH": ["DRIVER", "ROUTE", "CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"],
-      "CHECKS": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE", "CUSTOMER", "BRAND"],
-      "CREDIT": ["CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"],
-      "POSCARDS": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE", "CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"]
+      "CASH": ["DRIVER", "ROUTE"],
+      "CHECKS": ["DRIVER", "ROUTE"],
+      "CREDIT": ["DRIVER", "ROUTE"],
+      "POSCARDS": ["DRIVER", "ROUTE"]
     };
 
     const currentHierarchy = topicsHierarchy[topicTag] || [];
@@ -181,10 +182,10 @@ function DashboardContent() {
   // Reset hierarchy to default for a specific topic
   const resetTopicHierarchy = (topicTag: string) => {
     const defaultHierarchies: { [key: string]: string[] } = {
-      "CASH": ["DRIVER", "ROUTE", "CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"],
-      "CHECKS": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE", "CUSTOMER", "BRAND"],
-      "CREDIT": ["CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"],
-      "POSCARDS": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE", "CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"]
+      "CASH": ["DRIVER", "ROUTE"],
+      "CHECKS": ["DRIVER", "ROUTE"],
+      "CREDIT": ["DRIVER", "ROUTE"],
+      "POSCARDS": ["DRIVER", "ROUTE"]
     };
 
     const newHierarchies = { ...topicsHierarchy };
@@ -222,11 +223,12 @@ function DashboardContent() {
       }
     }
     initializeTopicsHierarchy();
+    setIsInitialLoadComplete(true);
   }, [initializeTopicsHierarchy]);
 
-  // Clear area and outlet when tenant changes
+  // Clear area and outlet when tenant changes (only after initial load)
   useEffect(() => {
-    if (selectedTenant) {
+    if (isInitialLoadComplete && selectedTenant) {
       const availableAreas = getAvailableAreas();
       const currentAreaExists = availableAreas.some(area => area.AreaId.toString() === selectedArea);
       if (!currentAreaExists) {
@@ -234,18 +236,18 @@ function DashboardContent() {
         setSelectedOutlet('');
       }
     }
-  }, [selectedTenant, getAvailableAreas, selectedArea]);
+  }, [isInitialLoadComplete, selectedTenant, getAvailableAreas, selectedArea]);
 
-  // Clear outlet when area changes
+  // Clear outlet when area changes (only after initial load)
   useEffect(() => {
-    if (selectedArea) {
+    if (isInitialLoadComplete && selectedArea) {
       const availableOutlets = getAvailableOutlets();
       const currentOutletExists = availableOutlets.some(outlet => outlet.OutletId.toString() === selectedOutlet);
       if (!currentOutletExists) {
         setSelectedOutlet('');
       }
     }
-  }, [selectedArea, getAvailableOutlets, selectedOutlet]);
+  }, [isInitialLoadComplete, selectedArea, getAvailableOutlets, selectedOutlet]);
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
@@ -326,10 +328,12 @@ function DashboardContent() {
     updateAvailableFilters();
   }, [updateAvailableFilters]);
 
-  // Fetch filters when component mounts or when area/outlet changes
+  // Fetch filters only once after initial load is complete
   useEffect(() => {
-    fetchFilters();
-  }, [selectedArea, selectedOutlet, selectedTenant, fetchFilters]);
+    if (isInitialLoadComplete) {
+      fetchFilters();
+    }
+  }, [isInitialLoadComplete, fetchFilters]);
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -404,15 +408,15 @@ function DashboardContent() {
     }
   }, [selectedTopics, topicsHierarchy, selectedBusinessDay, selectedArea, selectedOutlet, filterState, getTenantCode]);
 
-  // Load data when selections change
+  // Load data when selections change (only after initial load is complete)
   useEffect(() => {
-    if (selectedArea && selectedOutlet && selectedTenant && selectedBusinessDay && selectedTopics.length > 0) {
+    if (isInitialLoadComplete && selectedArea && selectedOutlet && selectedTenant && selectedBusinessDay && selectedTopics.length > 0) {
       loadDashboardData();
-    } else {
+    } else if (isInitialLoadComplete) {
       setDashboardData(null);
       setLoading(false); // Stop loading when selections are incomplete
     }
-  }, [selectedArea, selectedOutlet, selectedTenant, selectedBusinessDay, selectedTopics, filterState, topicsHierarchy, loadDashboardData]);
+  }, [isInitialLoadComplete, selectedArea, selectedOutlet, selectedTenant, selectedBusinessDay, selectedTopics, filterState, topicsHierarchy, loadDashboardData]);
 
   const handleFilterChange = (filterTag: string, values: string[]) => {
     // check if values is empty remove the filter key from the object

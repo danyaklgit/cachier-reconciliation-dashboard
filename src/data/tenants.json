@@ -1,0 +1,23 @@
+{
+  "Tenants": [
+    {
+      "TenantId": 1,
+      "TenantCode": "ABP",
+      "TenantName": "Al Baraka Payment",
+      "Areas": [
+        {
+          "AreaId": 1,
+          "AreaCode": "DC-101",
+          "AreaName": "Distribution Center Riad 101",
+          "Outlets": [
+            {
+              "OutletId": 1,
+              "OutletCode": "CA1",
+              "OutletName": "Riad Central 1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
