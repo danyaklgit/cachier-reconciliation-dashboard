@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -81,6 +81,62 @@ const getCellStyle = (value: number, columnType: string) => {
 
 export function ReconciliationTable({ data, filterState }: ReconciliationTableProps) {
   const [expanded, setExpanded] = useState<ExpandedState>({});
+  const [isExpanding, setIsExpanding] = useState(false);
+  const expandTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [visibleRows, setVisibleRows] = useState<number>(50); // Start with 50 visible rows
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  // Debounced expansion handler to prevent rapid clicks
+  const handleRowExpansion = useCallback((rowId: string, hasChildren: boolean) => {
+    if (!hasChildren || isExpanding) return;
+
+    // Clear any existing timeout
+    if (expandTimeoutRef.current) {
+      clearTimeout(expandTimeoutRef.current);
+    }
+
+    setIsExpanding(true);
+
+    // Use requestAnimationFrame to ensure smooth UI updates
+    requestAnimationFrame(() => {
+      setExpanded(prev => ({
+        ...(prev as Record<string, boolean>),
+        [rowId]: !(prev as Record<string, boolean>)[rowId]
+      }));
+
+      // Reset expanding state after a short delay
+      expandTimeoutRef.current = setTimeout(() => {
+        setIsExpanding(false);
+      }, 100);
+    });
+  }, [isExpanding]);
+
+  // Handle loading more rows
+  const handleLoadMore = useCallback(() => {
+    setIsLoadingMore(true);
+    
+    // Simulate a small delay for better UX
+    setTimeout(() => {
+      setVisibleRows(prev => prev + 50);
+      setIsLoadingMore(false);
+    }, 300);
+  }, []);
+
+  // Reset visible rows when data changes
+  React.useEffect(() => {
+    setVisibleRows(50);
+    setIsLoadingMore(false);
+  }, [data, filterState]);
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (expandTimeoutRef.current) {
+        clearTimeout(expandTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const columns = useMemo<ColumnDef<DataNode>[]>(() => [
     {
@@ -98,20 +154,17 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
 
         return (
           <div className={`flex items-center space-x-2 ${hasChildren ? 'cursor-pointer' : ''}`} style={{ paddingLeft: `${depth * 8}px` }}
-            onClick={() => {
-              setExpanded(prev => ({
-                ...(prev as Record<string, boolean>),
-                [rowId]: !(prev as Record<string, boolean>)[rowId]
-              }));
-            }}>
+            onClick={() => handleRowExpansion(rowId, !!hasChildren)}>
             {hasChildren ? (
               <Button
                 variant="ghost"
                 size="sm"
-
-                className="h-6 w-6 p-0"
+                className={`h-6 w-6 p-0 ${isExpanding ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={isExpanding}
               >
-                {isExpanded ? (
+                {isExpanding ? (
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-500"></div>
+                ) : isExpanded ? (
                   <ChevronDown className="h-4 w-4 text-gray-500" />
                 ) : (
                   <ChevronRight className="h-4 w-4 text-gray-500" />
@@ -354,7 +407,7 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
         },
       ],
     },
-  ], [expanded]);
+  ], [expanded, handleRowExpansion, isExpanding]);
 
   const filteredData = useMemo(() => {
     let filtered = data;
@@ -429,8 +482,12 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
     }
   }
 
+  const allRows = table.getExpandedRowModel().rows;
+  const displayedRows = allRows.slice(0, visibleRows);
+  const hasMoreRows = visibleRows < allRows.length;
+
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto" ref={tableRef}>
       <table className="w-full border-collapse" {...{
         style: {
           // width: table.getCenterTotalSize(),
@@ -459,7 +516,7 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
           ))}
         </thead>
         <tbody>
-          {table.getExpandedRowModel().rows.map((row) => (
+          {displayedRows.map((row) => (
             <tr key={row.id} className={`${getRowStyle(row.original.NodeTag, row.depth)} hover:bg-gray-200`}>
               {row.getVisibleCells().map((cell) => (
                 <td
@@ -471,7 +528,17 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
               ))}
             </tr>
           ))}
-          {table.getExpandedRowModel().rows.length === 0 && (
+          {isLoadingMore && (
+            <tr>
+              <td colSpan={13} className="border border-gray-200 border-x-transparent px-2 py-4 text-sm bg-white text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-gray-500">Loading more rows...</span>
+                </div>
+              </td>
+            </tr>
+          )}
+          {allRows.length === 0 && (
             <tr>
               <td colSpan={13}
                 className="border italic font-medium text-slate-500 border-gray-200 border-x-transparent px-2 py-4 text-sm bg-white text-center">
@@ -481,6 +548,26 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
           )}
         </tbody>
       </table>
+      {hasMoreRows && (
+        <div className="mt-4 text-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLoadMore}
+            disabled={isLoadingMore}
+            className="text-xs"
+          >
+            {isLoadingMore ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-600"></div>
+                Loading...
+              </div>
+            ) : (
+              `Load More Rows (${allRows.length - visibleRows} remaining)`
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
