@@ -4,14 +4,13 @@ export async function POST(request: NextRequest) {
   try {
     console.log('Making request to external API...');
     
-    // Get parameters from request body, or use defaults
+    // Get parameters from request body
     const body = await request.json();
+    const { RequestJson } = body;
+    
     const requestBody = {
-      parameters: body.parameters || [
-        { key: "LanguageCode", value: "en" },
-        { key: "MerchantCode", value: "42" },
-        { key: "BusinessDay", value: "10/10/2025" },
-        { key: "DashboardHierarchy", value: "" }
+      parameters: [
+        { key: "RequestJson", value: JSON.stringify(RequestJson) }
       ]
     };
     

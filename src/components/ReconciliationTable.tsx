@@ -471,6 +471,14 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
               ))}
             </tr>
           ))}
+          {table.getExpandedRowModel().rows.length === 0 && (
+            <tr>
+              <td colSpan={13}
+                className="border italic font-medium text-slate-500 border-gray-200 border-x-transparent px-2 py-4 text-sm bg-white text-center">
+                No records found
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>

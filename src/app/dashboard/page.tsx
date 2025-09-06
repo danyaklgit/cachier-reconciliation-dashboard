@@ -11,8 +11,7 @@ import { Input } from '@/components/ui/input';
 import { ReconciliationTable } from '@/components/ReconciliationTable';
 import { DashboardData, Filter, FilterState, Topic } from '@/types';
 import { getMixedFontClass } from '@/lib/font-utils';
-import areasData from '@/data/areas.json';
-import outletsData from '@/data/outlets.json';
+import tenantsData from '@/data/tenants.json';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -36,6 +35,7 @@ function DashboardContent() {
   // New selection states
   const [selectedArea, setSelectedArea] = useState<string>('');
   const [selectedOutlet, setSelectedOutlet] = useState<string>('');
+  const [selectedTenant, setSelectedTenant] = useState<string>('');
   const [selectedBusinessDay, setSelectedBusinessDay] = useState<string>(() => {
     const today = new Date().toISOString().split('T')[0];
     return today;
@@ -140,6 +140,27 @@ function DashboardContent() {
     return filter?.Label || filterTag;
   };
 
+  // Helper functions to get areas and outlets from selected tenant
+  const getSelectedTenant = useCallback(() => {
+    return tenantsData.Tenants.find(tenant => tenant.TenantId.toString() === selectedTenant);
+  }, [selectedTenant]);
+
+  const getAvailableAreas = useCallback(() => {
+    const tenant = getSelectedTenant();
+    return tenant?.Areas || [];
+  }, [getSelectedTenant]);
+
+  const getAvailableOutlets = useCallback(() => {
+    const areas = getAvailableAreas();
+    const selectedAreaObj = areas.find(area => area.AreaId.toString() === selectedArea);
+    return selectedAreaObj?.Outlets || [];
+  }, [getAvailableAreas, selectedArea]);
+
+  const getTenantCode = useCallback(() => {
+    const tenant = getSelectedTenant();
+    return tenant?.TenantCode || '';
+  }, [getSelectedTenant]);
+
   // Check if hierarchy has changed from default
   const hasHierarchyChanged = (topicTag: string) => {
     const defaultHierarchies: { [key: string]: string[] } = {
@@ -192,6 +213,7 @@ function DashboardContent() {
         const parsedState = JSON.parse(savedState);
         if (parsedState.selectedArea) setSelectedArea(parsedState.selectedArea);
         if (parsedState.selectedOutlet) setSelectedOutlet(parsedState.selectedOutlet);
+        if (parsedState.selectedTenant) setSelectedTenant(parsedState.selectedTenant);
         if (parsedState.selectedBusinessDay) setSelectedBusinessDay(parsedState.selectedBusinessDay);
         if (parsedState.selectedTopics) setSelectedTopics(parsedState.selectedTopics);
         if (parsedState.filterState) setFilterState(parsedState.filterState);
@@ -202,31 +224,42 @@ function DashboardContent() {
     initializeTopicsHierarchy();
   }, [initializeTopicsHierarchy]);
 
+  // Clear area and outlet when tenant changes
+  useEffect(() => {
+    if (selectedTenant) {
+      const availableAreas = getAvailableAreas();
+      const currentAreaExists = availableAreas.some(area => area.AreaId.toString() === selectedArea);
+      if (!currentAreaExists) {
+        setSelectedArea('');
+        setSelectedOutlet('');
+      }
+    }
+  }, [selectedTenant, getAvailableAreas, selectedArea]);
+
+  // Clear outlet when area changes
+  useEffect(() => {
+    if (selectedArea) {
+      const availableOutlets = getAvailableOutlets();
+      const currentOutletExists = availableOutlets.some(outlet => outlet.OutletId.toString() === selectedOutlet);
+      if (!currentOutletExists) {
+        setSelectedOutlet('');
+      }
+    }
+  }, [selectedArea, getAvailableOutlets, selectedOutlet]);
+
   // Save state to localStorage whenever it changes
   useEffect(() => {
     const stateToSave = {
       selectedArea,
       selectedOutlet,
+      selectedTenant,
       selectedBusinessDay,
       selectedTopics,
       filterState
     };
     localStorage.setItem('dashboardState', JSON.stringify(stateToSave));
-  }, [selectedArea, selectedOutlet, selectedBusinessDay, selectedTopics, filterState]);
+  }, [selectedArea, selectedOutlet, selectedTenant, selectedBusinessDay, selectedTopics, filterState]);
 
-  // Load data when selections change
-  useEffect(() => {
-    if (selectedArea && selectedOutlet && selectedBusinessDay) {
-      // Format date as DDMMYYYY to match the data file naming convention
-      const dateParts = selectedBusinessDay.split('-');
-      const formattedDate = `${dateParts[2]}${dateParts[1]}${dateParts[0]}`;
-      const fileName = `${selectedArea}_${selectedOutlet}_${formattedDate}.json`;
-      loadDashboardData(fileName);
-    } else {
-      setDashboardData(null);
-      setLoading(false); // Stop loading when selections are incomplete
-    }
-  }, [selectedArea, selectedOutlet, selectedBusinessDay]);
 
   const updateAvailableFilters = useCallback(() => {
     const selectedTopicObjects = topicsData.Topics.filter(topic =>
@@ -296,22 +329,90 @@ function DashboardContent() {
   // Fetch filters when component mounts or when area/outlet changes
   useEffect(() => {
     fetchFilters();
-  }, [selectedArea, selectedOutlet, fetchFilters]);
+  }, [selectedArea, selectedOutlet, selectedTenant, fetchFilters]);
 
-  const loadDashboardData = async (fileName: string) => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
-      // In a real app, this would be an API call
-      // For now, we'll use the mock data directly
-      const data = await import(`@/data/${fileName}`);
-      setDashboardData(data.default);
-    } catch {
-      // Silently handle the error and show the no data message
+
+      // Build the RequestJson object with dynamic values from the page
+      const selectedTopic = selectedTopics[0]; // Use first selected topic
+      const hierarchy = topicsHierarchy[selectedTopic] || [];
+      const dashboardHierarchy = hierarchy.join('|');
+
+      // Build filter parameters dynamically
+      const filterParams: { [key: string]: string } = {};
+      Object.keys(filterState).forEach((filterTag, index) => {
+        const selectedValues = filterState[filterTag];
+        if (selectedValues && selectedValues.length > 0) {
+          filterParams[`Filter${index + 1}`] = selectedValues.join(',');
+        }
+      });
+
+      // const requestJson = {
+      //   languageCode: 'en',
+      //   // tenantCode: tenantsData.Tenants.find(tenant => tenant.TenantId.toString() === selectedTenant)?.TenantCode || '',
+      //   tenantCode: 'ABP',
+      //   // businessDay: selectedBusinessDay,
+      //   BusinessDay: '2025-08-27',
+      //   AreaIds: [selectedArea || null],
+      //   OutletIds: [selectedOutlet || null],
+      //   Topics: selectedTopics,
+      //   DashboardHierarchy: dashboardHierarchy,
+      //   Filters: []
+      // };
+      
+        const requestJson = {
+          TenantCode: getTenantCode(),
+          AreaIds: selectedArea ? [selectedArea] : [],
+          OutletIds: selectedOutlet ? [selectedOutlet] : [],
+          BusinessDay: selectedBusinessDay,
+          Topics: selectedTopics,
+          Filters: Object.keys(filterState).map(filterTag => ({
+            Tag: filterTag,
+            Values: filterState[filterTag] || []
+          })).filter(filter => filter.Values.length > 0),
+          DashboardHierarchy: dashboardHierarchy,
+          LanguageCode: 'en'
+        };
+
+
+      console.log('Sending request with RequestJson:', requestJson);
+
+      const response = await fetch('/api/test-dashboard', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // body: JSON.stringify({  RequestJson:requestJson })
+        body: JSON.stringify({
+          RequestJson: requestJson
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load dashboard data');
+      }
+
+      const data = await response.json();
+      setDashboardData(data);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
       setDashboardData(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedTopics, topicsHierarchy, selectedBusinessDay, selectedArea, selectedOutlet, filterState, getTenantCode]);
+
+  // Load data when selections change
+  useEffect(() => {
+    if (selectedArea && selectedOutlet && selectedTenant && selectedBusinessDay && selectedTopics.length > 0) {
+      loadDashboardData();
+    } else {
+      setDashboardData(null);
+      setLoading(false); // Stop loading when selections are incomplete
+    }
+  }, [selectedArea, selectedOutlet, selectedTenant, selectedBusinessDay, selectedTopics, filterState, topicsHierarchy, loadDashboardData]);
 
   const handleFilterChange = (filterTag: string, values: string[]) => {
     // check if values is empty remove the filter key from the object
@@ -404,6 +505,7 @@ function DashboardContent() {
 
   const areaLiteral = "DC"
   const outletLiteral = "Cashier"
+  const tenantLiteral = "Tenant"
   return (
     <div className="min-h-screen bg-[#f4f5f7]">
       {/* Header */}
@@ -430,6 +532,7 @@ function DashboardContent() {
                   localStorage.removeItem('dashboardState');
                   setSelectedArea('');
                   setSelectedOutlet('');
+                  setSelectedTenant('');
                   setSelectedBusinessDay(new Date().toISOString().split('T')[0]);
                   setSelectedTopics(['POSCARDS']);
                   setFilterState({});
@@ -463,9 +566,24 @@ function DashboardContent() {
                 <h1 className="text-xl font-bold text-gray-900">Reconciliation Dashboard</h1>
 
               </div>
+              <div className="space-y-2">
+                <MultiSelect
+                  options={tenantsData.Tenants.map(tenant => ({
+                    value: tenant.TenantId.toString(),
+                    label: tenant.TenantName
+                  }))}
+                  selectedValues={selectedTenant ? [selectedTenant] : []}
+                  onSelectionChange={(values) => setSelectedTenant(values[0] || '')}
+                  showSelectedValues={(selectedValues) => { return `${tenantLiteral}: ${tenantsData.Tenants.find(tenant => tenant.TenantId.toString() === selectedValues[0])?.TenantName}` }}
+                  placeholder={`Select ${tenantLiteral}`}
+                  className="w-fit"
+                  minSelections={0}
+                  maxSelections={1}
+                />
+              </div>
               <div className="space-y-2 flex items-center gap-2">
                 <MultiSelect
-                  options={areasData.Areas.map(area => ({
+                  options={getAvailableAreas().map(area => ({
                     value: area.AreaId.toString(),
                     label: `${area.AreaCode} - ${area.AreaName}`
                   }))}
@@ -475,12 +593,15 @@ function DashboardContent() {
                   className="w-fit"
                   minSelections={0}
                   maxSelections={1}
-                  showSelectedValues={(selectedValues) => { return `${areaLiteral}: ${areasData.Areas.find(area => area.AreaId.toString() === selectedValues[0])?.AreaName}` }}
+                  showSelectedValues={(selectedValues) => { 
+                    const area = getAvailableAreas().find(area => area.AreaId.toString() === selectedValues[0]);
+                    return `${areaLiteral}: ${area?.AreaName || ''}`;
+                  }}
                 />
               </div>
               <div className="space-y-2">
                 <MultiSelect
-                  options={outletsData.Outlets.map(outlet => ({
+                  options={getAvailableOutlets().map(outlet => ({
                     value: outlet.OutletId.toString(),
                     label: `${outlet.OutletCode} - ${outlet.OutletName}`
                   }))}
@@ -490,7 +611,10 @@ function DashboardContent() {
                   className="w-fit"
                   minSelections={0}
                   maxSelections={1}
-                  showSelectedValues={(selectedValues) => { return `${outletLiteral}: ${selectedValues.map(value => outletsData.Outlets.find(outlet => outlet.OutletId.toString() === value)?.OutletName).join(', ')}` }}
+                  showSelectedValues={(selectedValues) => { 
+                    const outlet = getAvailableOutlets().find(outlet => outlet.OutletId.toString() === selectedValues[0]);
+                    return `${outletLiteral}: ${outlet?.OutletName || ''}`;
+                  }}
                 />
               </div>
               {filtersLoading ? (
