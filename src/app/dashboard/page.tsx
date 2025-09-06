@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { ChevronLeft, ChevronRight, CreditCard, FilterIcon, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CreditCard, FilterIcon, X, Settings, GripVertical } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ReconciliationTable } from '@/components/ReconciliationTable';
@@ -36,6 +36,12 @@ function DashboardContent() {
     return today;
   });
 
+  const hiearchies = {
+    "CASH": "DRIVER|ROUTE|CUSTOMER|BRAND|CUMULATIVE_FROM_DATE",
+    "CHECKS": "TERMINAL|DRIVER|PAYMENT_METHOD|ROUTE|CUSTOMER|BRAND",
+    "CREDIT": "CUSTOMER|BRAND|CUMULATIVE_FROM_DATE"
+  }
+  
   // Helper functions to get previous and next day dates
   const getPreviousDay = (dateString: string) => {
     const date = new Date(dateString);
@@ -127,9 +133,11 @@ function DashboardContent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          areaId: areaId || null,
-          outletId: outletId || null,
-          languageCode: 'ar'
+          // areaId: areaId || null,
+          areaId: null,
+          // outletId: outletId || null,
+          outletId: null,
+          languageCode: 'en'
         }),
       });
 
@@ -487,6 +495,7 @@ function DashboardContent() {
                           value: value.Code,
                           label: value.Label
                         })) || []}
+                        filterDisplayText={filter.Label}
                         selectedValues={filterState[filter.Tag] || []}
                         onSelectionChange={(values) => handleFilterChange(filter.Tag, values)}
                         placeholder={`Select ${filter.Label}`}

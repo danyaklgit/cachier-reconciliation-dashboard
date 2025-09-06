@@ -10,7 +10,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         'sans': ['var(--font-nunito)', 'system-ui', 'sans-serif'],
-        'arabic': ['var(--font-tajawal)', 'system-ui', 'sans-serif'],
+        // 'arabic': ['var(--font-tajawal)', 'system-ui', 'sans-serif'],
       },
     },
   },

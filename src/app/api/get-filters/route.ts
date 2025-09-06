@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       ]
     };
 
-    console.log('Fetching filters with parameters:', requestBody);
+    // console.log('Fetching filters with parameters:', requestBody);
 
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    console.log('Filters API response:', data);
+    // console.log('Filters API response:', data);
 
     return NextResponse.json(data);
   } catch (error) {
