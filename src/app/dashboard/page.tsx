@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input';
 import { ReconciliationTable } from '@/components/ReconciliationTable';
 import { DashboardData, Filter, FilterState, Topic } from '@/types';
 import { getMixedFontClass } from '@/lib/font-utils';
-import tenantsData from '@/data/tenants.json';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -27,11 +26,27 @@ function DashboardContent() {
   const [filtersLoading, setFiltersLoading] = useState(false);
   const [filtersData, setFiltersData] = useState<{ Filters: Filter[] }>({ Filters: [] });
   const [topicsData, setTopicsData] = useState<{ Topics: Topic[] }>({ Topics: [] });
+  const [tenantsData, setTenantsData] = useState<{ Tenants: Array<{
+    TenantId: number;
+    TenantCode: string;
+    TenantName: string;
+    Areas: Array<{
+      AreaId: number;
+      AreaCode: string;
+      AreaName: string;
+      Outlets: Array<{
+        OutletId: number;
+        OutletCode: string;
+        OutletName: string;
+      }>;
+    }>;
+  }> }>({ Tenants: [] });
   const [topicsHierarchy, setTopicsHierarchy] = useState<{ [topicTag: string]: string[] }>({});
   const [isHierarchyModalOpen, setIsHierarchyModalOpen] = useState(false);
   const [draggedItem, setDraggedItem] = useState<{ topicTag: string; index: number } | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<{ topicTag: string; index: number } | null>(null);
   const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
+  const [tenantsLoading, setTenantsLoading] = useState(false);
 
   // New selection states
   const [selectedArea, setSelectedArea] = useState<string>('');
@@ -144,7 +159,7 @@ function DashboardContent() {
   // Helper functions to get areas and outlets from selected tenant
   const getSelectedTenant = useCallback(() => {
     return tenantsData.Tenants.find(tenant => tenant.TenantId.toString() === selectedTenant);
-  }, [selectedTenant]);
+  }, [selectedTenant, tenantsData.Tenants]);
 
   const getAvailableAreas = useCallback(() => {
     const tenant = getSelectedTenant();
@@ -226,9 +241,27 @@ function DashboardContent() {
     setIsInitialLoadComplete(true);
   }, [initializeTopicsHierarchy]);
 
-  // Clear area and outlet when tenant changes (only after initial load)
+  // Validate saved selections after tenant data is loaded
   useEffect(() => {
-    if (isInitialLoadComplete && selectedTenant) {
+    if (tenantsData.Tenants.length > 0 && selectedTenant) {
+      const availableAreas = getAvailableAreas();
+      const currentAreaExists = availableAreas.some(area => area.AreaId.toString() === selectedArea);
+      if (!currentAreaExists) {
+        setSelectedArea('');
+        setSelectedOutlet('');
+      } else if (selectedArea) {
+        const availableOutlets = getAvailableOutlets();
+        const currentOutletExists = availableOutlets.some(outlet => outlet.OutletId.toString() === selectedOutlet);
+        if (!currentOutletExists) {
+          setSelectedOutlet('');
+        }
+      }
+    }
+  }, [tenantsData.Tenants, selectedTenant, selectedArea, selectedOutlet, getAvailableAreas, getAvailableOutlets]);
+
+  // Clear area and outlet when tenant changes (only after initial load and not during validation)
+  useEffect(() => {
+    if (isInitialLoadComplete && selectedTenant && tenantsData.Tenants.length > 0) {
       const availableAreas = getAvailableAreas();
       const currentAreaExists = availableAreas.some(area => area.AreaId.toString() === selectedArea);
       if (!currentAreaExists) {
@@ -236,18 +269,18 @@ function DashboardContent() {
         setSelectedOutlet('');
       }
     }
-  }, [isInitialLoadComplete, selectedTenant, getAvailableAreas, selectedArea]);
+  }, [isInitialLoadComplete, selectedTenant, getAvailableAreas, selectedArea, tenantsData.Tenants.length]);
 
-  // Clear outlet when area changes (only after initial load)
+  // Clear outlet when area changes (only after initial load and not during validation)
   useEffect(() => {
-    if (isInitialLoadComplete && selectedArea) {
+    if (isInitialLoadComplete && selectedArea && tenantsData.Tenants.length > 0) {
       const availableOutlets = getAvailableOutlets();
       const currentOutletExists = availableOutlets.some(outlet => outlet.OutletId.toString() === selectedOutlet);
       if (!currentOutletExists) {
         setSelectedOutlet('');
       }
     }
-  }, [isInitialLoadComplete, selectedArea, getAvailableOutlets, selectedOutlet]);
+  }, [isInitialLoadComplete, selectedArea, getAvailableOutlets, selectedOutlet, tenantsData.Tenants.length]);
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
@@ -324,16 +357,47 @@ function DashboardContent() {
     }
   }, []);
 
+  const fetchTenants = useCallback(async () => {
+    try {
+      setTenantsLoading(true);
+      const response = await fetch('/api/get-tenant-hierarchy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          areaId: null,
+          outletId: null,
+          languageCode: 'en'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setTenantsData(data);
+    } catch (error) {
+      console.error('Error fetching tenant hierarchy:', error);
+      // Fallback to empty data if API fails
+      setTenantsData({ Tenants: [] });
+    } finally {
+      setTenantsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     updateAvailableFilters();
   }, [updateAvailableFilters]);
 
-  // Fetch filters only once after initial load is complete
+  // Fetch filters and tenants only once after initial load is complete
   useEffect(() => {
     if (isInitialLoadComplete) {
       fetchFilters();
+      fetchTenants();
     }
-  }, [isInitialLoadComplete, fetchFilters]);
+  }, [isInitialLoadComplete, fetchFilters, fetchTenants]);
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -571,19 +635,26 @@ function DashboardContent() {
 
               </div>
               <div className="space-y-2">
-                <MultiSelect
-                  options={tenantsData.Tenants.map(tenant => ({
-                    value: tenant.TenantId.toString(),
-                    label: tenant.TenantName
-                  }))}
-                  selectedValues={selectedTenant ? [selectedTenant] : []}
-                  onSelectionChange={(values) => setSelectedTenant(values[0] || '')}
-                  showSelectedValues={(selectedValues) => { return `${tenantLiteral}: ${tenantsData.Tenants.find(tenant => tenant.TenantId.toString() === selectedValues[0])?.TenantName}` }}
-                  placeholder={`Select ${tenantLiteral}`}
-                  className="w-fit"
-                  minSelections={0}
-                  maxSelections={1}
-                />
+                {tenantsLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    <span className="text-sm text-gray-600">Loading tenants...</span>
+                  </div>
+                ) : (
+                  <MultiSelect
+                    options={tenantsData.Tenants.map(tenant => ({
+                      value: tenant.TenantId.toString(),
+                      label: tenant.TenantName
+                    }))}
+                    selectedValues={selectedTenant ? [selectedTenant] : []}
+                    onSelectionChange={(values) => setSelectedTenant(values[0] || '')}
+                    showSelectedValues={(selectedValues) => { return `${tenantLiteral}: ${tenantsData.Tenants.find(tenant => tenant.TenantId.toString() === selectedValues[0])?.TenantName}` }}
+                    placeholder={`Select ${tenantLiteral}`}
+                    className="w-fit"
+                    minSelections={0}
+                    maxSelections={1}
+                  />
+                )}
               </div>
               <div className="space-y-2 flex items-center gap-2">
                 <MultiSelect
