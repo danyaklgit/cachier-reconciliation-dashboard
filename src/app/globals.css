@@ -20,6 +20,7 @@
 @layer base {
   :root {
     --font-nunito: "Nunito", sans-serif;
+    --font-tajawal: "Tajawal", sans-serif;
     --color-primary: #30c3d5;
     --color-primary-foreground: #ffffff;
   }

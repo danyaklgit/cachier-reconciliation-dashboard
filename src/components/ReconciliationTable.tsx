@@ -379,7 +379,7 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
     getRowId: (row) => row.Id, // Use the Id field from DataNode
     getRowCanExpand: (row) => {
       const hasChildren = Boolean(row.original.ChildNodes && row.original.ChildNodes.length > 0);
-      console.log(`Row ${row.original.Id} (${row.original.NodeLabel}): hasChildren=${hasChildren}, ChildNodes:`, row.original.ChildNodes);
+      // console.log(`Row ${row.original.Id} (${row.original.NodeLabel}): hasChildren=${hasChildren}, ChildNodes:`, row.original.ChildNodes);
       return hasChildren;
     },
     getSubRows: (row) => row.ChildNodes,
@@ -389,10 +389,10 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
   });
 
   // Debug logging
-  console.log('Current expanded state:', expanded);
-  console.log('Filtered data:', filteredData);
-  console.log('Expanded rows:', table.getExpandedRowModel().rows);
-  console.log('All rows:', table.getRowModel().rows);
+  // console.log('Current expanded state:', expanded);
+  // console.log('Filtered data:', filteredData);
+  // console.log('Expanded rows:', table.getExpandedRowModel().rows);
+  // console.log('All rows:', table.getRowModel().rows);
 
   const resolveHeaderClassName = (headerGroupId: string) => {
     switch (headerGroupId) {
@@ -440,7 +440,6 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id} >
               {headerGroup.headers.map((header) => {
-                console.log(header.id);
                 return (
                   <th
                     key={header.id}

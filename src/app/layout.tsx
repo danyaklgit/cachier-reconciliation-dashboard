@@ -1,11 +1,17 @@
 import type { Metadata } from 'next'
-import { Nunito } from 'next/font/google'
+import { Nunito, Tajawal } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 
 const nunito = Nunito({ 
   subsets: ['latin'],
   variable: '--font-nunito',
+})
+
+const tajawal = Tajawal({ 
+  subsets: ['arabic'],
+  weight: ['200', '300', '400', '500', '700', '800', '900'],
+  variable: '--font-tajawal',
 })
 
 export const metadata: Metadata = {
@@ -20,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={nunito.className}>
+      <body className={`${nunito.variable} ${tajawal.variable} font-sans`}>
         {children}
         <Toaster />
       </body>

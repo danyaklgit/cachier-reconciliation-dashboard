@@ -5,13 +5,12 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { ChevronLeft, ChevronRight, CreditCard, LandmarkIcon, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CreditCard, FilterIcon, X } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ReconciliationTable } from '@/components/ReconciliationTable';
-import { DashboardData, Filter, FilterState } from '@/types';
-import topicsData from '@/data/topics.json';
-import filtersData from '@/data/filters.json';
+import { DashboardData, Filter, FilterState, Topic } from '@/types';
+import { getMixedFontClass } from '@/lib/font-utils';
 import areasData from '@/data/areas.json';
 import outletsData from '@/data/outlets.json';
 import Image from 'next/image';
@@ -21,10 +20,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 function DashboardContent() {
   const router = useRouter();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [selectedTopics, setSelectedTopics] = useState<string[]>(['POS_CARDS']);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>(['POSCARDS']);
   const [availableFilters, setAvailableFilters] = useState<Filter[]>([]);
   const [filterState, setFilterState] = useState<FilterState>({});
   const [loading, setLoading] = useState(false);
+  const [filtersLoading, setFiltersLoading] = useState(false);
+  const [filtersData, setFiltersData] = useState<{ Filters: Filter[] }>({ Filters: [] });
+  const [topicsData, setTopicsData] = useState<{ Topics: Topic[] }>({ Topics: [] });
 
   // New selection states
   const [selectedArea, setSelectedArea] = useState<string>('');
@@ -114,11 +116,49 @@ function DashboardContent() {
       });
       return newFilterState;
     });
-  }, [selectedTopics]);
+  }, [selectedTopics, filtersData, topicsData]);
+
+  const fetchFilters = useCallback(async (areaId?: string, outletId?: string) => {
+    try {
+      setFiltersLoading(true);
+      const response = await fetch('/api/get-filters', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          areaId: areaId || null,
+          outletId: outletId || null,
+          languageCode: 'ar'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      // Set both filters and topics data from the API response
+      setFiltersData({ Filters: data.Filters || [] });
+      setTopicsData({ Topics: data.Topics || [] });
+    } catch (error) {
+      console.error('Error fetching filters:', error);
+      // Fallback to empty data if API fails
+      setFiltersData({ Filters: [] });
+      setTopicsData({ Topics: [] });
+    } finally {
+      setFiltersLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     updateAvailableFilters();
   }, [updateAvailableFilters]);
+
+  // Fetch filters when component mounts or when area/outlet changes
+  useEffect(() => {
+    fetchFilters(selectedArea, selectedOutlet);
+  }, [selectedArea, selectedOutlet, fetchFilters]);
 
   const loadDashboardData = async (fileName: string) => {
     try {
@@ -136,10 +176,17 @@ function DashboardContent() {
   };
 
   const handleFilterChange = (filterTag: string, values: string[]) => {
-    setFilterState(prev => ({
-      ...prev,
-      [filterTag]: values
-    }));
+    // check if values is empty remove the filter key from the object
+    if (values.length === 0) {
+      setFilterState(prev => ({
+        ...Object.fromEntries(Object.entries(prev).filter(([key]) => key !== filterTag))
+      }));
+    } else {
+      setFilterState(prev => ({
+        ...prev,
+        [filterTag]: values
+      }));
+    }
   };
   const removeFilter = (filterTag: string) => {
     setFilterState(prev => ({
@@ -186,14 +233,14 @@ function DashboardContent() {
 
   const resolveAppliesToTopic = (filterTag: string) => {
     return topicsData.Topics.filter(topic => topic.AvailableFilterTags.includes(filterTag))?.map(topic => {
-      return <div key={topic.Tag} className="text-xs text-primary font-medium">
+      return <div key={topic.Tag} className="text-xs text-primary opacity-60 font-medium">
         {/* {topic.Label} */}
         {topic.Tag === 'POS_CARDS' && (
           <Tooltip>
             <TooltipTrigger>
               <CreditCard className="w-4 h-4" />
             </TooltipTrigger>
-            <TooltipContent>This filter applies to POS Cards</TooltipContent>
+            <TooltipContent>This filter applies to {topic.Label}</TooltipContent>
           </Tooltip>
 
         )}
@@ -202,15 +249,15 @@ function DashboardContent() {
             <TooltipTrigger>
               <span className="icon-saudi_riyal text-sm w-4 h-4">&#xea;</span>
             </TooltipTrigger>
-            <TooltipContent>This filter applies to Cash</TooltipContent>
+            <TooltipContent>This filter applies to {topic.Label}</TooltipContent>
           </Tooltip>
         )}
-        {topic.Tag === 'WIRE_TRANSFERS' && (
+        {topic.Tag !== 'CASH' && topic.Tag !== 'POS_CARDS' && (
           <Tooltip>
             <TooltipTrigger>
-              <LandmarkIcon className="w-4 h-4" />
+              <FilterIcon className="w-4 h-4" />
             </TooltipTrigger>
-            <TooltipContent>This filter applies to Wire Transfers</TooltipContent>
+            <TooltipContent>This filter applies to {topic.Label}</TooltipContent>
           </Tooltip>
         )}
       </div>;
@@ -246,7 +293,7 @@ function DashboardContent() {
                   setSelectedArea('');
                   setSelectedOutlet('');
                   setSelectedBusinessDay(new Date().toISOString().split('T')[0]);
-                  setSelectedTopics(['POS_CARDS']);
+                  setSelectedTopics(['POSCARDS']);
                   setFilterState({});
                 }}
                 className="text-xs cursor-pointer hover:bg-gray-100 text-slate-500 hover:text-primary"
@@ -308,25 +355,32 @@ function DashboardContent() {
                   showSelectedValues={(selectedValues) => { return `${outletLiteral}: ${selectedValues.map(value => outletsData.Outlets.find(outlet => outlet.OutletId.toString() === value)?.OutletName).join(', ')}` }}
                 />
               </div>
-                             <div className="space-y-2">
-                 <MultiSelect
-                   options={topicsData.Topics.map(topic => ({
-                     value: topic.Tag,
-                     label: topic.Label
-                   }))}
-                   selectedValues={selectedTopics}
-                   onSelectionChange={(values) => {
-                     setSelectedTopics(values);
-                     if (values.length === 0) {
-                       setFilterState({});
-                     }
-                   }}
-                   placeholder="Select topics"
-                   className="w-fit"
-                   minSelections={1}
-                   showSelectedValues={(selectedValues) => { return `Topics: ${selectedValues.map(value => topicsData.Topics.find(topic => topic.Tag === value)?.Label).join(', ')}` }}
-                 />
-               </div>
+              {filtersLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-sm text-gray-600">Loading topics and filters...</span>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <MultiSelect
+                    options={topicsData.Topics.map(topic => ({
+                      value: topic.Tag,
+                      label: topic.Label
+                    }))}
+                    selectedValues={selectedTopics}
+                    onSelectionChange={(values) => {
+                      setSelectedTopics(values);
+                      if (values.length === 0) {
+                        setFilterState({});
+                      }
+                    }}
+                    placeholder="Select topics"
+                    className="w-fit"
+                    minSelections={1}
+                    showSelectedValues={(selectedValues) => { return `Topics: ${selectedValues.map(value => topicsData.Topics.find(topic => topic.Tag === value)?.Label).join(', ')}` }}
+                  />
+                </div>
+              )}
             </div>
 
 
@@ -380,70 +434,104 @@ function DashboardContent() {
           </div>
         </div> */}
 
-        {dashboardData && (selectedArea && selectedOutlet && selectedBusinessDay) && <Card className={
-          `mb-4 p-4 px-1 gap-1 group ${Object.keys(filterState).length > 0 ? 'bg-white' : 'bg-white/50'}`
-        }>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-bold text-gray-900">Custom Filters</CardTitle>
-              {Object.keys(filterState).some(key => filterState[key]?.length > 0) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setFilterState({})}
-                  className="text-xs"
-                >
-                  Clear All Filters
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className={`flex flex-col ${Object.keys(filterState).length > 0 ? 'gap-4' : 'gap-1'}`}>
-
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-
-
-              {/* Dynamic Filters */}
-              {availableFilters.map((filter) => (
-                <div key={filter.Tag} className="space-y-2">
-                  <Label className="flex text-sm items-end gap-2">
-                    <span className="text-sm pt-1">{filter.Label}</span>
-                    <div className="text-xs flex items-end gap-2 font-medium text-primary opacity-50 group-hover:opacity-100 duration-300 transition-all">{resolveAppliesToTopic(filter.Tag)}</div>
-                  </Label>
-                  <MultiSelect
-                    options={filter.Values?.map(value => ({
-                      value: value.Code,
-                      label: value.Label
-                    })) || []}
-                    selectedValues={filterState[filter.Tag] || []}
-                    onSelectionChange={(values) => handleFilterChange(filter.Tag, values)}
-                    placeholder={`Select ${filter.Label}`}
-                    className="w-full"
-                  />
+        {dashboardData && (selectedArea && selectedOutlet && selectedBusinessDay) && (
+          filtersLoading ? (
+            <Card className="mb-4 p-4 bg-white">
+              <CardHeader>
+                {/* <CardTitle className="text-lg font-bold text-gray-900">Custom Filters</CardTitle> */}
+              </CardHeader>
+              <CardContent className="flex flex-col items-center justify-center py-0">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  <div className="text-center">
+                    <p className="text-lg font-medium text-gray-900">Loading Filters</p>
+                    <p className="text-sm text-gray-600">Fetching available filters and topics...</p>
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {/* selected filters */}
-              {Object.keys(filterState).map((key) => {
-                const filter = filtersData.Filters.find(f => f.Tag === key);
-                return (
-                  <Badge key={key} className="bg-gray-100 rounded-md p-1 px-2 group">
-                    <Label>{filter?.Label}</Label>
-                    <p>{filterState[key].map(code => {
-                      const value = filter?.Values?.find(v => v.Code === code);
-                      return value?.Label || code;
-                    }).join(', ')}</p>
-                    <Button variant="ghost" size="icon" onClick={() => removeFilter(key)} className="ml-2 group-hover:bg-gray-200 hover:text-red-700 cursor-pointer">
-                      <X className="w-4 h-4" />
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className={
+              `mb-4 p-4 px-1 gap-1 group ${Object.keys(filterState).length > 0 ? 'bg-white' : 'bg-white/50'}`
+            }>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-bold text-gray-900">Custom Filters</CardTitle>
+                  {Object.keys(filterState).some(key => filterState[key]?.length > 0) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFilterState({})}
+                      className="text-xs"
+                    >
+                      Clear All Filters
                     </Button>
-                  </Badge>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>}
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className={`flex flex-col ${Object.keys(filterState).length > 0 ? 'gap-4' : 'gap-1'}`}>
+
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+
+
+                  {/* Dynamic Filters */}
+                  {availableFilters.map((filter) => (
+                    <div key={filter.Tag} className="space-y-2">
+                      <Label className="flex text-sm items-end gap-2">
+                        <span className="text-sm pt-1">{filter.Label}</span>
+                        <div className="text-xs flex items-end gap-2 font-medium text-primary opacity-50 group-hover:opacity-100 duration-300 transition-all">{resolveAppliesToTopic(filter.Tag)}</div>
+                      </Label>
+                      <MultiSelect
+                        options={filter.Values?.map(value => ({
+                          value: value.Code,
+                          label: value.Label
+                        })) || []}
+                        selectedValues={filterState[filter.Tag] || []}
+                        onSelectionChange={(values) => handleFilterChange(filter.Tag, values)}
+                        placeholder={`Select ${filter.Label}`}
+                        className="w-full"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {/* selected filters */}
+                  {Object.keys(filterState).map((key) => {
+                    const filter = filtersData.Filters.find(f => f.Tag === key);
+                    return (
+                      <Badge key={key} className="bg-gray-100 rounded-md p-1 px-2 group">
+                        <Label>{filter?.Label}</Label>
+                        <p className={getMixedFontClass()}>
+                          {(() => {
+                            const selectedLabels = filterState[key].map(code => {
+                              const value = filter?.Values?.find(v => v.Code === code);
+                              return value?.Label || code;
+                            });
+
+                            if (selectedLabels.length <= 3) {
+                              return selectedLabels.join(', ');
+                            } else {
+                              const firstThree = selectedLabels.slice(0, 3);
+                              const remaining = selectedLabels.length - 3;
+                              return <span className="flex items-center gap-1">
+                                <span>{firstThree.join(', ')}</span>
+                                <span className='text-primary'> + {remaining}</span>
+                              </span>;
+                            }
+                          })()}
+                        </p>
+                        <Button variant="ghost" size="icon" onClick={() => removeFilter(key)} className="ml-2 group-hover:bg-gray-200 hover:text-red-700 cursor-pointer">
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )
+        )}
 
         {/* No Data Message */}
         {!dashboardData && (selectedArea && selectedOutlet && selectedBusinessDay) && (
