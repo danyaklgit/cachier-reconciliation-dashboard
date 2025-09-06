@@ -1,0 +1,110 @@
+{
+	"Areas": [
+		{
+			"AreaId": 1245,
+			"AreaCode": "DC-101",
+			"AreaName": "Distribution Center Riad 101"
+		}
+	],
+	"Outlets": [
+		{
+			"OutletId": 9865,
+			"OutletCode": "CA1",
+			"OutletName": "Riad Central 1"
+		}
+	],
+	"BusinessDay": "2025-09-02",
+	"ChildNodes": [
+		{
+			"Id": "6B29FC40-CA47-1067-B31D-00DD01",
+			"NodeTag": "TOPIC",
+			"NodeLabel": "Pos Cards",
+			"RecordsVerification": {
+				"Recorded": 769665.0,
+				"Verified": 721267.0,
+				"CurrentDayVariances": {
+					"Outstanding": 48233.0,
+					"Exceptions": 165.0
+				},
+				"CumulativeVariances": {
+					"Outstanding": 52961.0,
+					"Exceptions": 192.0
+				}
+			},
+			"SettlementVerification": {
+				"Claimed": 721267.0,
+				"Settled": 698111.0,
+				"CurrentDayVariances": {
+					"AwaitingSettlement": 23156.0,
+					"Exceptions": 0.0
+				},
+				"CumulativeVariances": {
+					"AwaitingSettlement": 23156.0,
+					"Exceptions": 0.0
+				}
+			},
+			"ChildNodes": [
+				{
+					"Id": "789FC40-CA47-1067-B31D-00DJ81",
+					"NodeTag": "DRIVER",
+					"NodeLabel": "Ali Mostafa",
+					"RecordsVerification": {
+						"Recorded": 2000.0,
+						"Verified": 421267.0,
+						"CurrentDayVariances": {
+							"Outstanding": 140398.0,
+							"Exceptions": 8000.0
+						},
+						"CumulativeVariances": {
+							"Outstanding": 141524.0,
+							"Exceptions": 8500.0
+						}
+					},
+					"SettlementVerification": {
+						"Claimed": 421267.0,
+						"Settled": 401267.0,
+						"CurrentDayVariances": {
+							"AwaitingSettlement": 2000.0,
+							"Exceptions": 0.0
+						},
+						"CumulativeVariances": {
+							"AwaitingSettlement": 2000.0,
+							"Exceptions": 0.0
+						}
+					},
+					"ChildNodes": [
+						{
+							"Id": "8965FC40-CA47-1067-B31D-07UU01",
+							"NodeTag": "ROUTE",
+							"NodeLabel": "DC101-0001",
+							"RecordsVerification": {
+								"Recorded": 200000.0,
+								"Verified": 190000.0,
+								"CurrentDayVariances": {
+									"Outstanding": 9050.0,
+									"Exceptions": 50.0
+								},
+								"CumulativeVariances": {
+									"Outstanding": 10500.0,
+									"Exceptions": 540.0
+								}
+							},
+							"SettlementVerification": {
+								"Claimed": 190000.0,
+								"Settled": 190000.0,
+								"CurrentDayVariances": {
+									"AwaitingSettlement": 0.0,
+									"Exceptions": 0.0
+								},
+								"CumulativeVariances": {
+									"AwaitingSettlement": 0.0,
+									"Exceptions": 0.0
+								}
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

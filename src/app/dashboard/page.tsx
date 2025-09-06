@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { ChevronLeft, ChevronRight, CreditCard, FilterIcon, X, Settings, GripVertical } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CreditCard, FilterIcon, X, Settings, GripVertical, RotateCcw } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ReconciliationTable } from '@/components/ReconciliationTable';
@@ -16,6 +16,7 @@ import outletsData from '@/data/outlets.json';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 function DashboardContent() {
   const router = useRouter();
@@ -27,6 +28,10 @@ function DashboardContent() {
   const [filtersLoading, setFiltersLoading] = useState(false);
   const [filtersData, setFiltersData] = useState<{ Filters: Filter[] }>({ Filters: [] });
   const [topicsData, setTopicsData] = useState<{ Topics: Topic[] }>({ Topics: [] });
+  const [topicsHierarchy, setTopicsHierarchy] = useState<{ [topicTag: string]: string[] }>({});
+  const [isHierarchyModalOpen, setIsHierarchyModalOpen] = useState(false);
+  const [draggedItem, setDraggedItem] = useState<{ topicTag: string; index: number } | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<{ topicTag: string; index: number } | null>(null);
 
   // New selection states
   const [selectedArea, setSelectedArea] = useState<string>('');
@@ -36,12 +41,136 @@ function DashboardContent() {
     return today;
   });
 
-  const hiearchies = {
-    "CASH": "DRIVER|ROUTE|CUSTOMER|BRAND|CUMULATIVE_FROM_DATE",
-    "CHECKS": "TERMINAL|DRIVER|PAYMENT_METHOD|ROUTE|CUSTOMER|BRAND",
-    "CREDIT": "CUSTOMER|BRAND|CUMULATIVE_FROM_DATE"
-  }
-  
+  // Initialize topics hierarchy from localStorage or defaults
+  const initializeTopicsHierarchy = useCallback(() => {
+    const defaultHierarchies = {
+      "CASH": ["DRIVER", "ROUTE", "CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"],
+      "CHECKS": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE", "CUSTOMER", "BRAND"],
+      "CREDIT": ["CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"],
+      "POSCARDS": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE", "CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"]
+    };
+
+    const savedHierarchies = localStorage.getItem('topicsHierarchy');
+    if (savedHierarchies) {
+      try {
+        const parsed = JSON.parse(savedHierarchies);
+        setTopicsHierarchy(parsed);
+      } catch (error) {
+        console.error('Error parsing saved hierarchies:', error);
+        setTopicsHierarchy(defaultHierarchies);
+      }
+    } else {
+      setTopicsHierarchy(defaultHierarchies);
+    }
+  }, []);
+
+  // Save topics hierarchy to localStorage
+  const saveTopicsHierarchy = useCallback((hierarchies: { [topicTag: string]: string[] }) => {
+    localStorage.setItem('topicsHierarchy', JSON.stringify(hierarchies));
+    setTopicsHierarchy(hierarchies);
+  }, []);
+
+  // Drag and drop handlers for hierarchy items
+  const handleDragStart = (e: React.DragEvent, topicTag: string, index: number) => {
+    setDraggedItem({ topicTag, index });
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', JSON.stringify({ topicTag, index }));
+  };
+
+  const handleDragEnd = () => {
+    // Always reset states on drag end
+    setDraggedItem(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, topicTag: string, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+
+    // Only allow dropping within the same topic
+    if (draggedItem && draggedItem.topicTag === topicTag && draggedItem.index !== index) {
+      setDragOverIndex({ topicTag, index });
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Check if we're actually leaving the element (not just moving to a child)
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+      setDragOverIndex(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, targetTopicTag: string, targetIndex: number) => {
+    e.preventDefault();
+
+    if (!draggedItem) return;
+
+    const { topicTag: sourceTopicTag, index: sourceIndex } = draggedItem;
+
+    // Only allow dropping within the same topic
+    if (sourceTopicTag !== targetTopicTag) {
+      handleDragEnd();
+      return;
+    }
+
+    if (sourceIndex === targetIndex) {
+      handleDragEnd();
+      return;
+    }
+
+    const newHierarchies = { ...topicsHierarchy };
+    const sourceHierarchy = [...newHierarchies[sourceTopicTag]];
+
+    // Reordering within the same topic
+    const [movedItem] = sourceHierarchy.splice(sourceIndex, 1);
+    sourceHierarchy.splice(targetIndex, 0, movedItem);
+    newHierarchies[sourceTopicTag] = sourceHierarchy;
+
+    saveTopicsHierarchy(newHierarchies);
+    handleDragEnd();
+  };
+
+  // Get filter label for display
+  const getFilterLabel = (filterTag: string) => {
+    const filter = filtersData.Filters.find(f => f.Tag === filterTag);
+    return filter?.Label || filterTag;
+  };
+
+  // Check if hierarchy has changed from default
+  const hasHierarchyChanged = (topicTag: string) => {
+    const defaultHierarchies: { [key: string]: string[] } = {
+      "CASH": ["DRIVER", "ROUTE", "CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"],
+      "CHECKS": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE", "CUSTOMER", "BRAND"],
+      "CREDIT": ["CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"],
+      "POSCARDS": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE", "CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"]
+    };
+
+    const currentHierarchy = topicsHierarchy[topicTag] || [];
+    const defaultHierarchy = defaultHierarchies[topicTag] || [];
+
+    if (currentHierarchy.length !== defaultHierarchy.length) return true;
+
+    return currentHierarchy.some((item, index) => item !== defaultHierarchy[index]);
+  };
+
+  // Reset hierarchy to default for a specific topic
+  const resetTopicHierarchy = (topicTag: string) => {
+    const defaultHierarchies: { [key: string]: string[] } = {
+      "CASH": ["DRIVER", "ROUTE", "CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"],
+      "CHECKS": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE", "CUSTOMER", "BRAND"],
+      "CREDIT": ["CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"],
+      "POSCARDS": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE", "CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"]
+    };
+
+    const newHierarchies = { ...topicsHierarchy };
+    newHierarchies[topicTag] = defaultHierarchies[topicTag] || [];
+    saveTopicsHierarchy(newHierarchies);
+  };
+
   // Helper functions to get previous and next day dates
   const getPreviousDay = (dateString: string) => {
     const date = new Date(dateString);
@@ -70,7 +199,8 @@ function DashboardContent() {
         console.error('Error loading saved dashboard state:', error);
       }
     }
-  }, []);
+    initializeTopicsHierarchy();
+  }, [initializeTopicsHierarchy]);
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
@@ -124,7 +254,7 @@ function DashboardContent() {
     });
   }, [selectedTopics, filtersData, topicsData]);
 
-  const fetchFilters = useCallback(async (areaId?: string, outletId?: string) => {
+  const fetchFilters = useCallback(async () => {
     try {
       setFiltersLoading(true);
       const response = await fetch('/api/get-filters', {
@@ -165,7 +295,7 @@ function DashboardContent() {
 
   // Fetch filters when component mounts or when area/outlet changes
   useEffect(() => {
-    fetchFilters(selectedArea, selectedOutlet);
+    fetchFilters();
   }, [selectedArea, selectedOutlet, fetchFilters]);
 
   const loadDashboardData = async (fileName: string) => {
@@ -390,6 +520,127 @@ function DashboardContent() {
                 </div>
               )}
             </div>
+            {!filtersLoading && <Dialog open={isHierarchyModalOpen} onOpenChange={setIsHierarchyModalOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  // variant="default"
+                  size="sm"
+                  className="text-xs bg-white text-primary cursor-pointer"
+                >
+                  <Settings className="w-4 h-4 mr-1" />
+                  Edit Topics Hierarchy
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-white max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>
+                    <span>Edit Topics Hierarchy</span>
+                    <span className="text-sm text-gray-500 font-normal">
+                      <br />
+                      <br />
+                      <span className="text-sm text-gray-500 font-normal">
+                        Drag and drop to reorder the hierarchy
+                      </span>
+                    </span>
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6">
+                  {selectedTopics.map((topicTag) => {
+                    const topic = topicsData.Topics.find(t => t.Tag === topicTag);
+                    const hierarchy = topicsHierarchy[topicTag] || [];
+
+                    return (
+                      <div key={topicTag} className="border rounded-lg p-4">
+                        <h3 className="text-md font-semibold mb-3 flex items-center justify-between">
+                          <div className={`
+                            flex items-center gap-2
+                            ${hasHierarchyChanged(topicTag) ? 'text-primary' : 'text-gray-900'}
+                          `}>
+                            {topic?.Label || topicTag}
+                            <span className="text-xs text-gray-500 font-normal">
+                              ({hierarchy.length} levels)
+                            </span>
+                          </div>
+                          {hasHierarchyChanged(topicTag) && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => resetTopicHierarchy(topicTag)}
+                              className="text-xs h-7 px-2"
+                            >
+                              <RotateCcw className="w-3 h-3 mr-1" />
+                              Reset
+                            </Button>
+                          )}
+                        </h3>
+                        <div className="space-y-2">
+                          {hierarchy.map((filterTag, index) => {
+                            const isDragged = draggedItem?.topicTag === topicTag && draggedItem?.index === index;
+                            const isDragOver = dragOverIndex?.topicTag === topicTag && dragOverIndex?.index === index;
+                            const canDrop = draggedItem?.topicTag === topicTag && draggedItem?.index !== index;
+
+                            return (
+                              <div key={`${topicTag}-${filterTag}-${index}`}>
+                                {/* Drop preview indicator */}
+                                {/* {isDragOver && canDrop && (
+                                  <div className="h-0.5 bg-primary rounded-full mx-3 mb-1" />
+                                )} */}
+
+                                <div
+                                  draggable
+                                  onDragStart={(e) => handleDragStart(e, topicTag, index)}
+                                  onDragEnd={handleDragEnd}
+                                  onDragOver={(e) => handleDragOver(e, topicTag, index)}
+                                  onDragLeave={handleDragLeave}
+                                  onDrop={(e) => handleDrop(e, topicTag, index)}
+                                  style={{
+                                    paddingLeft: `${(index + 1) * 10}px`
+                                  }}
+                                  className={`
+                                    flex items-center gap-3 p-2 rounded-md cursor-move transition-colors duration-150
+                                    ${isDragged
+                                      ? 'opacity-60 bg-blue-50 border border-blue-300'
+                                      : isDragOver && canDrop
+                                        ? 'bg-blue-50 border border-blue-200'
+                                        : 'bg-gray-50 hover:bg-gray-100 border border-transparent'
+                                    }
+                                    ${!canDrop && draggedItem && draggedItem.topicTag !== topicTag ? 'opacity-40' : ''}
+                                  `}
+                                >
+                                  <GripVertical className={`w-4 h-4 ${isDragged ? 'text-blue-500' : 'text-gray-400'}`} />
+                                  <span className={`text-xs font-medium ${isDragged ? 'text-blue-600' : 'text-gray-600'}`}>
+                                    Level <span className={`${isDragged ? 'text-blue-700' : 'text-slate-600'} font-normal`}>{index}</span>
+                                  </span>
+                                  <span className={`text-sm flex-1 ${getMixedFontClass()} ${isDragged ? 'text-blue-700' : ''}`}>
+                                    {getFilterLabel(filterTag)}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+
+                          {/* Drop zone at the end */}
+                          {draggedItem?.topicTag === topicTag && (
+                            <div
+                              onDragOver={(e) => handleDragOver(e, topicTag, hierarchy.length)}
+                              onDragLeave={handleDragLeave}
+                              onDrop={(e) => handleDrop(e, topicTag, hierarchy.length)}
+                              className={`
+                                h-1 rounded-md transition-colors duration-150
+                                ${dragOverIndex?.topicTag === topicTag && dragOverIndex?.index === hierarchy.length
+                                  ? 'bg-blue-500'
+                                  : 'bg-transparent hover:bg-blue-100'
+                                }
+                              `}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </DialogContent>
+            </Dialog>}
 
 
 
@@ -465,16 +716,19 @@ function DashboardContent() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-bold text-gray-900">Custom Filters</CardTitle>
-                  {Object.keys(filterState).some(key => filterState[key]?.length > 0) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setFilterState({})}
-                      className="text-xs"
-                    >
-                      Clear All Filters
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2">
+
+                    {Object.keys(filterState).some(key => filterState[key]?.length > 0) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setFilterState({})}
+                        className="text-xs"
+                      >
+                        Clear All Filters
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className={`flex flex-col ${Object.keys(filterState).length > 0 ? 'gap-4' : 'gap-1'}`}>
@@ -495,7 +749,6 @@ function DashboardContent() {
                           value: value.Code,
                           label: value.Label
                         })) || []}
-                        filterDisplayText={filter.Label}
                         selectedValues={filterState[filter.Tag] || []}
                         onSelectionChange={(values) => handleFilterChange(filter.Tag, values)}
                         placeholder={`Select ${filter.Label}`}
