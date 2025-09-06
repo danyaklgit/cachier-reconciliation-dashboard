@@ -60,9 +60,12 @@ function DashboardTestingContent() {
     
     // Create filter objects based on available data
     const relevantFilters: Filter[] = availableFilterTags.map(tag => ({
-      FilterTag: tag,
-      FilterLabel: tag.charAt(0) + tag.slice(1).toLowerCase().replace(/_/g, ' '),
-      FilterValues: extractUniqueValues(dashboardData.ChildNodes || [], tag)
+      Tag: tag,
+      Label: tag.charAt(0) + tag.slice(1).toLowerCase().replace(/_/g, ' '),
+      Values: extractUniqueValues(dashboardData.ChildNodes || [], tag).map(value => ({
+        Code: value,
+        Label: value
+      }))
     }));
 
     setAvailableFilters(relevantFilters);
@@ -446,8 +449,8 @@ function DashboardTestingContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* Dynamic Filters */}
               {availableFilters.map((filter) => (
-                <div key={filter.FilterTag} className="space-y-2">
-                  <Label>{filter.FilterLabel}</Label>
+                <div key={filter.Tag} className="space-y-2">
+                  <Label>{filter.Label}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -455,21 +458,21 @@ function DashboardTestingContent() {
                         className="w-full justify-between text-left font-normal"
                       >
                         <span className="truncate">
-                          {filterState[filter.FilterTag]?.length > 0
-                            ? `${filterState[filter.FilterTag]?.length} selected`
-                            : `Select ${filter.FilterLabel}`}
+                          {filterState[filter.Tag]?.length > 0
+                            ? `${filterState[filter.Tag]?.length} selected`
+                            : `Select ${filter.Label}`}
                         </span>
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-64 p-0 bg-white">
                       <div className="p-3 border-b">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">{filter.FilterLabel}</span>
-                          {filterState[filter.FilterTag]?.length > 0 && (
+                          <span className="text-sm font-medium">{filter.Label}</span>
+                          {filterState[filter.Tag]?.length > 0 && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleFilterChange(filter.FilterTag, [])}
+                              onClick={() => handleFilterChange(filter.Tag, [])}
                               className="h-auto p-1 text-xs text-gray-500 hover:text-gray-700"
                             >
                               Clear all
@@ -478,25 +481,25 @@ function DashboardTestingContent() {
                         </div>
                       </div>
                       <div className="max-h-60 overflow-auto p-1">
-                        {filter.FilterValues.map((value) => (
-                          <div key={value} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-md">
+                        {filter.Values?.map((value) => (
+                          <div key={value.Code} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-md">
                             <Checkbox
-                              id={`${filter.FilterTag}-${value}`}
-                              checked={filterState[filter.FilterTag]?.includes(value) || false}
+                              id={`${filter.Tag}-${value.Code}`}
+                              checked={filterState[filter.Tag]?.includes(value.Code) || false}
                               onCheckedChange={(checked) => {
-                                const currentValues = filterState[filter.FilterTag] || [];
+                                const currentValues = filterState[filter.Tag] || [];
                                 if (checked) {
-                                  handleFilterChange(filter.FilterTag, [...currentValues, value]);
+                                  handleFilterChange(filter.Tag, [...currentValues, value.Code]);
                                 } else {
-                                  handleFilterChange(filter.FilterTag, currentValues.filter(v => v !== value));
+                                  handleFilterChange(filter.Tag, currentValues.filter(v => v !== value.Code));
                                 }
                               }}
                             />
                             <label
-                              htmlFor={`${filter.FilterTag}-${value}`}
+                              htmlFor={`${filter.Tag}-${value.Code}`}
                               className="text-sm cursor-pointer flex-1"
                             >
-                              {value}
+                              {value.Label}
                             </label>
                           </div>
                         ))}

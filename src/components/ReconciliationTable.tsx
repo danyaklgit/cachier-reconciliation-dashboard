@@ -421,7 +421,7 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
       case 'settlementExceptions':
       case 'settlementCumAwaiting':
       case 'settlementCumExceptions':
-        return 'bg-blue-100';
+        return 'bg-blue-500/50';
       case 'topic':
         return 'bg-primary opacity-80';
       default:
