@@ -45,13 +45,13 @@ function DashboardContent() {
   // Initialize topics hierarchy from localStorage or defaults
   const initializeTopicsHierarchy = useCallback(() => {
     const defaultHierarchies = {
-      "CASH": ["DRIVER", "ROUTE", "CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"],
-      "CHECKS": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE", "CUSTOMER", "BRAND"],
-      "CREDIT": ["CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"],
-      "POSCARDS": ["TERMINAL", "DRIVER", "PAYMENT_METHOD", "ROUTE", "CUSTOMER", "BRAND", "CUMULATIVE_FROM_DATE"]
+      "CASH": ["DRIVER", "ROUTE"],
+      "CHECKS": ["DRIVER", "ROUTE"],
+      "CREDIT": ["DRIVER", "ROUTE"],
+      "POSCARDS": ["DRIVER", "ROUTE"]
     };
 
-    const savedHierarchies = localStorage.getItem('topicsHierarchy');
+    const savedHierarchies = localStorage.getItem('topicsHierarchy_');
     if (savedHierarchies) {
       try {
         const parsed = JSON.parse(savedHierarchies);
@@ -67,7 +67,7 @@ function DashboardContent() {
 
   // Save topics hierarchy to localStorage
   const saveTopicsHierarchy = useCallback((hierarchies: { [topicTag: string]: string[] }) => {
-    localStorage.setItem('topicsHierarchy', JSON.stringify(hierarchies));
+    localStorage.setItem('topicsHierarchy_', JSON.stringify(hierarchies));
     setTopicsHierarchy(hierarchies);
   }, []);
 

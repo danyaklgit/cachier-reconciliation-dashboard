@@ -1,23 +1,84 @@
 {
-  "Tenants": [
-    {
-      "TenantId": 1,
-      "TenantCode": "ABP",
-      "TenantName": "Al Baraka Payment",
-      "Areas": [
-        {
-          "AreaId": 1,
-          "AreaCode": "DC-101",
-          "AreaName": "Distribution Center Riad 101",
-          "Outlets": [
-            {
-              "OutletId": 1,
-              "OutletCode": "CA1",
-              "OutletName": "Riad Central 1"
-            }
+  "Tenants": [{
+          "TenantId": 1,
+          "TenantCode": "ABP",
+          "TenantName": "Aljomaih Bottling Plants",
+          "Areas": [{
+                  "AreaId": 3,
+                  "AreaCode": "DC003",
+                  "AreaName": "Aziziah - العزيزية",
+                  "Outlets": [{
+                          "OutletId": 4,
+                          "OutletCode": "DC003-CASHIER01",
+                          "OutletName": "DC003-CASHIER01"
+                      }, {
+                          "OutletId": 5,
+                          "OutletCode": "DC003-CASHIER02",
+                          "OutletName": "DC003-CASHIER02"
+                      }
+                  ]
+              }, {
+                  "AreaId": 2,
+                  "AreaCode": "DC002",
+                  "AreaName": "Riyadh - الرياض",
+                  "Outlets": [{
+                          "OutletId": 3,
+                          "OutletCode": "DC002-CASHIER01",
+                          "OutletName": "DC002-CASHIER01"
+                      }
+                  ]
+              }, {
+                  "AreaId": 1,
+                  "AreaCode": "DC001",
+                  "AreaName": "Sharoura - شرورة",
+                  "Outlets": [{
+                          "OutletId": 1,
+                          "OutletCode": "DC001-CASHIER01",
+                          "OutletName": "DC001-CASHIER01"
+                      }, {
+                          "OutletId": 2,
+                          "OutletCode": "DC001-CASHIER02",
+                          "OutletName": "DC001-CASHIER02"
+                      }
+                  ]
+              }
           ]
-        }
-      ]
-    }
+      }, {
+          "TenantId": 2,
+          "TenantCode": "ABC",
+          "TenantName": "Aljomaih Beverages Company",
+          "Areas": [{
+                  "AreaId": 6,
+                  "AreaCode": "DC006",
+                  "AreaName": "Dammam- الدمام",
+                  "Outlets": [{
+                          "OutletId": 8,
+                          "OutletCode": "DC006-CASHIER01",
+                          "OutletName": "DC006-CASHIER01"
+                      }
+                  ]
+              }, {
+                  "AreaId": 4,
+                  "AreaCode": "DC004",
+                  "AreaName": "Kharj - الخرج",
+                  "Outlets": [{
+                          "OutletId": 6,
+                          "OutletCode": "DC004-CASHIER01",
+                          "OutletName": "DC004-CASHIER01"
+                      }
+                  ]
+              }, {
+                  "AreaId": 5,
+                  "AreaCode": "DC005",
+                  "AreaName": "Khobar - الخبر",
+                  "Outlets": [{
+                          "OutletId": 7,
+                          "OutletCode": "DC005-CASHIER01",
+                          "OutletName": "DC005-CASHIER01"
+                      }
+                  ]
+              }
+          ]
+      }
   ]
 }
