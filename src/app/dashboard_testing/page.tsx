@@ -544,6 +544,7 @@ function DashboardTestingContent() {
             <ReconciliationTable
               data={dashboardData.ChildNodes}
               filterState={filterState}
+              viewTransaction={()=>{}}
             />
           </CardContent>
         </Card>

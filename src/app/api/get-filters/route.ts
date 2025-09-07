@@ -9,9 +9,6 @@ export async function POST(request: NextRequest) {
     const apiUrl = API_CONFIG.BASE_URL;
     const apiKey = API_CONFIG.API_KEY;
 
-    console.log('API URL:', apiUrl);
-    console.log('API Key:', apiKey ? `${apiKey.substring(0, 8)}...` : 'NOT SET');
-    console.log('API Key length:', apiKey ? apiKey.length : 0);
     const requestBody = {
       parameters: [
         { key: 'SP', value: 'GetFilters' },
@@ -26,16 +23,12 @@ export async function POST(request: NextRequest) {
       ]
     };
 
-    console.log('Fetching filters with parameters:', JSON.stringify(requestBody, null, 2));
 
     const headers = {
       'x-api-key': apiKey,
       'Content-Type': 'application/json',
     };
     
-    console.log('Making request to external API...');
-    console.log('Request headers:', headers);
-    console.log('Request body:', JSON.stringify(requestBody, null, 2));
     
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -43,8 +36,6 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(requestBody),
     });
 
-    console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -61,7 +52,6 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    // console.log('Filters API response:', data);
 
     return NextResponse.json(data);
   } catch (error) {

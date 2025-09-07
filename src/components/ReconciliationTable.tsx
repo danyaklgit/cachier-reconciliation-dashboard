@@ -81,7 +81,7 @@ const getCellStyle = (value: number, columnType: string) => {
   // }
 };
 
-export function ReconciliationTable({ data, filterState, viewTransaction }: ReconciliationTableProps) {
+export function ReconciliationTable({ data, filterState, viewTransaction = () => { } }: ReconciliationTableProps) {
   const [expanded, setExpanded] = useState<ExpandedState>({});
   const [isExpanding, setIsExpanding] = useState(false);
   const expandTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -117,7 +117,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction }: Reco
   // Handle loading more rows
   const handleLoadMore = useCallback(() => {
     setIsLoadingMore(true);
-    
+
     // Simulate a small delay for better UX
     setTimeout(() => {
       setVisibleRows(prev => prev + 50);
@@ -423,11 +423,10 @@ export function ReconciliationTable({ data, filterState, viewTransaction }: Reco
                 // toast.success('View action clicked for row:' + row.original.Id, {
                 //   position: 'bottom-right',
                 // });
-                // console.log('View action clicked for row:', row.original);
               }}
               className="text-xs text-primary px-3 py-1 cursor-pointer"
             >
-              View 
+              View
             </Button>
           </div>
         );
@@ -459,7 +458,6 @@ export function ReconciliationTable({ data, filterState, viewTransaction }: Reco
     getRowId: (row) => row.Id, // Use the Id field from DataNode
     getRowCanExpand: (row) => {
       const hasChildren = Boolean(row.original.ChildNodes && row.original.ChildNodes.length > 0);
-      // console.log(`Row ${row.original.Id} (${row.original.NodeLabel}): hasChildren=${hasChildren}, ChildNodes:`, row.original.ChildNodes);
       return hasChildren;
     },
     getSubRows: (row) => row.ChildNodes,
@@ -468,24 +466,39 @@ export function ReconciliationTable({ data, filterState, viewTransaction }: Reco
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  // Debug logging
-  // console.log('Current expanded state:', expanded);
-  // console.log('Filtered data:', filteredData);
-  // console.log('Expanded rows:', table.getExpandedRowModel().rows);
-  // console.log('All rows:', table.getRowModel().rows);
 
   const resolveHeaderClassName = (headerGroupId: string) => {
-    console.log('headerGroupId:', headerGroupId);
     switch (headerGroupId) {
-      case '1_recordsVerification_2_recorded_recorded':
-      case '1_recordsVerification_2_verified_verified':
+      case 'outstanding':
+      case 'exceptions':
+      case 'cumOutstanding':
+      case 'cumExceptions':
+        return 'bg-red-100 text-xs';
 
-      case '2_recorded_recorded':
-      case '2_verified_verified':
+      case 'settlementCumAwaiting':
+      case 'awaitingSettlement':
+      case 'settlementExceptions':
+      case 'settlementCumExceptions':
+        return 'bg-blue-100 text-xs';
       case '2_currentDayVariances_outstanding':
       case '2_cumulativeVariances_cumOutstanding':
       case 'recorded':
       case 'verified':
+        return 'bg-red-100 text-sm';
+      case '2_settlementCurrentDayVariances_awaitingSettlement':
+      case '2_settlementCumulativeVariances_settlementCumAwaiting':
+      case 'claimed':
+      case 'settled':
+        return 'bg-blue-100 text-sm';
+
+
+      case '1_recordsVerification_2_recorded_recorded':
+      case '1_recordsVerification_2_verified_verified':
+      case '2_recorded_recorded':
+      case '2_verified_verified':
+      case '2_currentDayVariances_outstanding':
+      case '2_cumulativeVariances_cumOutstanding':
+
       case 'outstanding':
       case 'exceptions':
       case 'cumOutstanding':
@@ -507,7 +520,11 @@ export function ReconciliationTable({ data, filterState, viewTransaction }: Reco
       case '2_actions_actions':
         return 'bg-blue-100';
       case 'topic':
-        return 'bg-blue-300 opacity-80';
+        return 'bg-slate-200 border-r-slate-300 opacity-80';
+
+      case '1_topic_2_topic_topic':
+      case '2_topic_topic':
+        return '!border-0 bg-white'
       default:
         return 'bg-white';
     }
@@ -531,8 +548,9 @@ export function ReconciliationTable({ data, filterState, viewTransaction }: Reco
                 return (
                   <th
                     key={header.id}
+                    id={header.id}
                     colSpan={header.colSpan}
-                    className={`border border-gray-300 border-x-gray-300 px-2 py-2 text-left font-semibold text-slate-900 text-sm ${resolveHeaderClassName(header.id)}`}
+                    className={`border border-slate-300 border-x-slate-200 px-2 py-2 text-left font-semibold text-slate-900 text-base ${resolveHeaderClassName(header.id)}`}
                   // style={{ width: header.getSize() }}
                   >
                     {header.isPlaceholder ? null : (

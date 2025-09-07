@@ -3,7 +3,6 @@ import { API_CONFIG } from '@/lib/config';
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Making request to external API...');
     
     // Get parameters from request body
     const body = await request.json();
@@ -15,7 +14,6 @@ export async function POST(request: NextRequest) {
       ]
     };
     
-    console.log('Request body:', JSON.stringify(requestBody, null, 2));
     
     const response = await fetch(API_CONFIG.BASE_URL, {
       method: 'POST',
@@ -26,8 +24,6 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(requestBody)
     });
 
-    console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -36,7 +32,6 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    console.log('Success response:', JSON.stringify(data, null, 2));
     return NextResponse.json(data);
   } catch (error) {
     console.error('API Error:', error);
