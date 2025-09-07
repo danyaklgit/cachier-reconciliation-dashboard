@@ -50,7 +50,7 @@ const getRowStyle = (nodeTag: string, depth: number) => {
   // const baseStyle = 'border-b border-gray-50';
   const baseStyle = '';
   const depthStyle = depth === 0 ?
-    ' text-primary text-base' :
+    ' text-sm text-base font-semibold text-primary' :
     depth === 1 ?
       'text-sm font-semibold text-slate-800' :
       depth === 2 ?
@@ -550,7 +550,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
   const hasMoreRows = visibleRows < allRows.length;
 
   return (
-    <div className="overflow-x-auto" ref={tableRef}>
+    <div className="overflow-x-auto  bg-white" ref={tableRef}>
       <table className="w-full border-collapse" {...{
         style: {
           // width: table.getCenterTotalSize(),
@@ -558,15 +558,14 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
       }}>
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id} >
+            <tr key={headerGroup.id} className="bg-gradient-to-r from-slate-50 to-gray-50">
               {headerGroup.headers.map((header) => {
                 return (
                   <th
                     key={header.id}
                     id={header.id}
                     colSpan={header.colSpan}
-                    className={`border border-slate-300 border-x-slate-200 px-2 py-2 text-left font-semibold text-slate-900 text-base ${resolveHeaderClassName(header.id)}`}
-                  // style={{ width: header.getSize() }}
+                    className={`border-b border-modern-light px-2 py-2 text-left font-semibold text-slate-900 text-sm ${resolveHeaderClassName(header.id)} `}
                   >
                     {header.isPlaceholder ? null : (
                       <div className="text-center">
@@ -580,12 +579,17 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
           ))}
         </thead>
         <tbody>
-          {displayedRows.map((row) => (
-            <tr key={row.id} className={`${getRowStyle(row.original.NodeTag, row.depth)} hover:bg-gray-200`}>
+          {displayedRows.map((row, index) => (
+            <tr 
+              key={row.id} 
+              className={`${getRowStyle(row.original.NodeTag, row.depth)} transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/30 hover:shadow-sm border-b border-modern-light/50 ${
+                index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'
+              }`}
+            >
               {row.getVisibleCells().map((cell) => (
                 <td
                   key={cell.id}
-                  className="border border-gray-200 border-x-transparent px-2 py-2 text-sm bg-white "
+                  className="px-4 py-2 text-sm  border-modern-light/30 last:border-r-0"
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
@@ -594,42 +598,61 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
           ))}
           {isLoadingMore && (
             <tr>
-              <td colSpan={13} className="border border-gray-200 border-x-transparent px-2 py-4 text-sm bg-white text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                  <span className="text-gray-500">Loading more rows...</span>
+              <td colSpan={13} className="px-4 py-8 text-sm bg-gradient-to-r from-blue-50/50 to-indigo-50/30 text-center">
+                <div className="flex items-center justify-center gap-3">
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-200 border-t-blue-600"></div>
+                    <div className="absolute inset-0 rounded-full h-6 w-6 border-2 border-transparent border-t-blue-400 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+                  </div>
+                  <span className="text-gray-600 font-medium">Loading more rows...</span>
                 </div>
               </td>
             </tr>
           )}
           {allRows.length === 0 && (
             <tr>
-              <td colSpan={13}
-                className="border italic font-medium text-slate-500 border-gray-200 border-x-transparent px-2 py-4 text-sm bg-white text-center">
-                No records found
+              <td colSpan={13} className="px-4 py-12 text-sm bg-gradient-to-r from-gray-50/50 to-slate-50/30 text-center">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-gray-600 font-medium">No records found</p>
+                    <p className="text-gray-500 text-xs mt-1">Try adjusting your filters or date range</p>
+                  </div>
+                </div>
               </td>
             </tr>
           )}
         </tbody>
       </table>
       {hasMoreRows && (
-        <div className="mt-4 text-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLoadMore}
-            disabled={isLoadingMore}
-            className="text-xs"
-          >
-            {isLoadingMore ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-600"></div>
-                Loading...
-              </div>
-            ) : (
-              `Load More Rows (${allRows.length - visibleRows} remaining)`
-            )}
-          </Button>
+        <div className="p-6 bg-gradient-to-r from-slate-50/50 to-gray-50/30 border-t border-modern-light">
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
+              className="text-sm border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 px-6 py-2 rounded-lg shadow-subtle hover:shadow-md"
+            >
+              {isLoadingMore ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+                  <span>Loading...</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span>Load More Rows</span>
+                  <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
+                    {allRows.length - visibleRows} remaining
+                  </span>
+                </div>
+              )}
+            </Button>
+          </div>
         </div>
       )}
     </div>

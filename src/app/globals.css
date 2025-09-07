@@ -1,8 +1,9 @@
+
 @import "tailwindcss";
 
 @font-face {
   font-family: 'SaudiRiyalSymbol';
-  src: url('/saudiriyalsymbol.ttf') format('truetype'),
+  src: url('/saudiriyalsymbol.ttf') format('truetype');
 }
 
 .icon-saudi_riyal {
@@ -15,21 +16,58 @@
   font-weight: bold;
 }
 
-
-
 @layer base {
   :root {
     --font-nunito: "Nunito", sans-serif;
-    /* --font-tajawal: "Tajawal", sans-serif; */
-    /* --color-primary: #30c3d5; */
     --color-primary: #0a49e0;
     --color-primary-foreground: #ffffff;
+    --color-secondary: #6366f1;
+    --color-accent: #f1f5f9;
+    --color-surface: #ffffff;
+    --color-surface-elevated: #fafbfc;
+    --color-border: #e2e8f0;
+    --color-border-light: #f1f5f9;
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #475569;
+    --color-text-muted: #64748b;
+    --color-success: #059669;
+    --color-warning: #d97706;
+    --color-error: #dc2626;
+    --color-info: #0ea5e9;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+      0 8px 10px -6px rgb(0 0 0 / 0.1);
   }
+
   * {
     @apply border-gray-200;
   }
+
   body {
-    @apply bg-white text-gray-900;
+    @apply bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 text-gray-900 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
   }
 }
 
@@ -42,5 +80,129 @@
   }
   .border-primary {
     border-color: var(--color-primary);
+  }
+
+  /* Modern gradient backgrounds */
+  .bg-gradient-modern {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .bg-gradient-subtle {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  }
+
+  .bg-gradient-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+  }
+
+  /* Enhanced shadows */
+  .shadow-modern {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-subtle {
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  /* Modern borders */
+  .border-modern {
+    border: 1px solid var(--color-border);
+  }
+
+  .border-modern-light {
+    border: 1px solid var(--color-border-light);
+  }
+
+  /* Typography improvements */
+  .text-display {
+    @apply text-3xl font-bold tracking-tight;
+  }
+
+  .text-heading {
+    @apply text-xl font-semibold tracking-tight;
+  }
+
+  .text-subheading {
+    @apply text-lg font-medium;
+  }
+
+  .text-body {
+    @apply text-base leading-relaxed;
+  }
+
+  .text-caption {
+    @apply text-sm text-gray-600;
+  }
+
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Loading skeleton */
+  .skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+
+  .skeleton-text {
+    @apply animate-pulse bg-gray-200 rounded h-4 w-full;
+  }
+
+  .skeleton-title {
+    @apply animate-pulse bg-gray-200 rounded h-6 w-3/4;
+  }
+
+  .skeleton-avatar {
+    @apply animate-pulse bg-gray-200 rounded h-10 w-10 rounded-full;
   }
 }

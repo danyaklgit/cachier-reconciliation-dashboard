@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { ChevronLeft, ChevronRight, CreditCard, FilterIcon, X, Settings, GripVertical, RotateCcw, EyeIcon, InfoIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FilterIcon, X, Settings, GripVertical, RotateCcw, InfoIcon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ReconciliationTable } from '@/components/ReconciliationTable';
@@ -690,10 +690,16 @@ function DashboardContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard data...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 flex items-center justify-center">
+        <div className="text-center space-y-6">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-24 w-24 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+            <div className="absolute inset-0 rounded-full h-24 w-24 border-4 border-transparent border-t-blue-400 animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-heading text-gray-900">Loading Dashboard</p>
+            <p className="text-caption">Fetching your reconciliation data...</p>
+          </div>
         </div>
       </div>
     );
@@ -711,7 +717,7 @@ function DashboardContent() {
             appliesToTopics?.map(topic => topic.Label).map(label => <span key={label}>{label}</span>)
           }
           </span>
-          </TooltipContent>
+        </TooltipContent>
       </Tooltip>
 
     </div>)
@@ -753,24 +759,36 @@ function DashboardContent() {
 
 
   return (
-    <div className="min-h-screen bg-[#f4f5f7]">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <div className="text-xl font-semibold text-gray-900 cursor-pointer" onClick={() => router.push('/')}>
-
-                <Image src="/logo_bwa_color.svg" alt="logo" width={60} height={50} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+      {/* Enhanced Header */}
+      <header className="bg-gradient-to-r from-white via-blue-50/50 to-indigo-50/30 shadow-modern border-b border-modern-light backdrop-blur-sm">
+        <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-10">
+          <div className="flex justify-between items-center min-h-17">
+            {/* Logo Section */}
+            <div className="flex items-center space-x-4">
+              <div
+                className="flex items-center space-x-3 cursor-pointer group transition-all duration-200 hover:scale-105"
+                onClick={() => router.push('/')}
+              >
+                <div className="p-2">
+                  <Image src="/logo_bwa_color.svg" alt="logo" width={60} height={60} />
+                </div>
+                <div className="hidden sm:block">
+                  <h1 className="text-lg font-bold text-gray-900">Reconciliation</h1>
+                  <p className="text-xs text-gray-600 -mt-1">Dashboard</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+
+            {/* Navigation Actions */}
+            <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
                 onClick={() => router.push('/dashboard_testing')}
-                className="text-xs cursor-pointer hover:bg-gray-100 text-slate-500 hover:text-primary"
+                className="text-sm cursor-pointer hover:bg-blue-50 text-slate-300 hover:text-blue-700 transition-all duration-200 px-4 py-2 rounded-lg border border-transparent hover:border-blue-200"
               >
-                Custom Data
+                <span className="hidden sm:inline">Custom Data</span>
+                <span className="sm:hidden">Data</span>
               </Button>
               <Button
                 variant="ghost"
@@ -787,110 +805,127 @@ function DashboardContent() {
                   setFilterState({});
                   window.location.reload();
                 }}
-                className="text-xs cursor-pointer hover:bg-gray-100 text-slate-500 hover:text-primary"
+                className="text-sm cursor-pointer hover:bg-orange-50 text-slate-300 hover:text-orange-600 transition-all duration-200 px-4 py-2 rounded-lg border border-transparent hover:border-orange-200"
               >
-                Reset view
+                <span className="hidden sm:inline ">Reset View</span>
+                <span className="sm:hidden">Reset</span>
               </Button>
             </div>
+
+            {/* User Profile Section */}
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
-                <span className="text-sm text-gray-700">lhallal@technorion.com</span>
-                <div className="w-4 h-4 bg-gray-300 rounded"></div>
+              <div className="hidden md:flex items-center space-x-3 px-3 py-1 bg-white/60 rounded-xl border border-modern-light shadow-subtle">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-semibold">LH</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-900">Lhallal</span>
+                  <span className="text-xs text-gray-500">lhallal@technorion.com</span>
+                </div>
+              </div>
+              <div className="md:hidden">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-semibold">LH</span>
+                </div>
               </div>
             </div>
-
-
           </div>
         </div>
       </header>
 
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        {/* Dashboard Title */}
-        <div className="mb-1">
+      <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-10 py-4">
+        {/* Enhanced Dashboard Title Section */}
+        <div className="mb-2 animate-fade-in">
+          {/* Breadcrumb Navigation */}
+
 
           {/* Selection Controls */}
-          <div className="flex items-center mb-2 justify-between">
-            <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Reconciliation Dashboard</h1>
-
-              </div>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              {/* <div>
+                <h1 className="text-display text-gray-900 mb-2">Reconciliation Dashboard</h1>
+                <p className="text-caption">Monitor and analyze financial reconciliation data across your organization</p>
+              </div> */}
+              {/* <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+                <span className="hover:text-primary cursor-pointer">Dashboard</span>
+                <span>/</span>
+                <span className="text-gray-900 font-medium">Reconciliation</span>
+              </nav> */}
               {tenantsLoading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                  <span className="text-sm text-gray-600">Loading tenants...</span>
-                </div>
-              ) : (<>
-                <div className="space-y-2">
-
-                  <MultiSelect
-                    options={tenantsData.Tenants.map(tenant => ({
-                      value: tenant.TenantId.toString(),
-                      label: tenant.TenantName
-                    }))}
-                    selectedValues={selectedTenant ? [selectedTenant] : []}
-                    onSelectionChange={(values) => setSelectedTenant(values[0] || '')}
-                    showSelectedValues={(selectedValues) => { return `${tenantLiteral}: ${tenantsData.Tenants.find(tenant => tenant.TenantId.toString() === selectedValues[0])?.TenantName}` }}
-                    placeholder={`Select ${tenantLiteral}`}
-                    className="w-fit"
-                    minSelections={0}
-                    maxSelections={1}
-                  />
-
-                </div>
-                <div className="space-y-2 flex items-center gap-2">
-                  <MultiSelect
-                    options={getAvailableAreas().map(area => ({
-                      value: area.AreaId.toString(),
-                      label: `${area.AreaCode} - ${area.AreaName}`
-                    }))}
-                    selectedValues={selectedAreas}
-                    onSelectionChange={(values) => setSelectedAreas(values)}
-                    placeholder={`Select ${areaLiteral}`}
-                    className="w-fit"
-                    minSelections={0}
-                    maxSelections={10}
-                    showSelectedValues={(selectedValues) => {
-                      const areas = getAvailableAreas().filter(area => selectedValues.includes(area.AreaId.toString()));
-                      if (areas.length <= 2) {
-                        return `${areaLiteral}: ${areas.map(area => area.AreaName).join(', ')}`;
-                      } else {
-                        return `${areaLiteral}: ${areas.slice(0, 2).map(area => area.AreaName).join(', ')} +${areas.length - 2} more`;
-                      }
-                    }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <MultiSelect
-                    options={getAvailableOutlets().map(outlet => ({
-                      value: outlet.OutletId.toString(),
-                      label: `${outlet.OutletCode} - ${outlet.OutletName}`
-                    }))}
-                    selectedValues={selectedOutlets}
-                    onSelectionChange={(values) => setSelectedOutlets(values)}
-                    placeholder={`Select ${outletLiteral}`}
-                    className="w-fit"
-                    minSelections={0}
-                    maxSelections={10}
-                    showSelectedValues={(selectedValues) => {
-                      const outlets = getAvailableOutlets().filter(outlet => selectedValues.includes(outlet.OutletId.toString()));
-                      if (outlets.length <= 2) {
-                        return `${outletLiteral}: ${outlets.map(outlet => outlet.OutletName).join(', ')}`;
-                      } else {
-                        return `${outletLiteral}: ${outlets.slice(0, 2).map(outlet => outlet.OutletName).join(', ')} +${outlets.length - 2} more`;
-                      }
-                    }}
-                  />
-                </div>
-              </>)}
-              {filtersLoading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                  <span className="text-sm text-gray-600">Loading topics and filters...</span>
+                <div className="flex items-center space-x-3 p-4 bg-white/60 rounded-xl border border-modern-light shadow-subtle">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
+                  <span className="text-sm text-gray-600 font-medium">Loading tenants...</span>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center space-x-2">
+                    <MultiSelect
+                      options={tenantsData.Tenants.map(tenant => ({
+                        value: tenant.TenantId.toString(),
+                        label: tenant.TenantName
+                      }))}
+                      selectedValues={selectedTenant ? [selectedTenant] : []}
+                      onSelectionChange={(values) => setSelectedTenant(values[0] || '')}
+                      showSelectedValues={(selectedValues) => { return `${tenantLiteral}: ${tenantsData.Tenants.find(tenant => tenant.TenantId.toString() === selectedValues[0])?.TenantName}` }}
+                      placeholder={`Select ${tenantLiteral}`}
+                      className="w-fit min-w-[200px]"
+                      minSelections={0}
+                      maxSelections={1}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <MultiSelect
+                      options={getAvailableAreas().map(area => ({
+                        value: area.AreaId.toString(),
+                        label: `${area.AreaCode} - ${area.AreaName}`
+                      }))}
+                      selectedValues={selectedAreas}
+                      onSelectionChange={(values) => setSelectedAreas(values)}
+                      placeholder={`Select ${areaLiteral}`}
+                      className="w-fit min-w-[200px]"
+                      minSelections={0}
+                      maxSelections={10}
+                      showSelectedValues={(selectedValues) => {
+                        const areas = getAvailableAreas().filter(area => selectedValues.includes(area.AreaId.toString()));
+                        if (areas.length <= 2) {
+                          return `${areaLiteral}: ${areas.map(area => area.AreaName).join(', ')}`;
+                        } else {
+                          return `${areaLiteral}: ${areas.slice(0, 2).map(area => area.AreaName).join(', ')} +${areas.length - 2} more`;
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <MultiSelect
+                      options={getAvailableOutlets().map(outlet => ({
+                        value: outlet.OutletId.toString(),
+                        label: `${outlet.OutletCode} - ${outlet.OutletName}`
+                      }))}
+                      selectedValues={selectedOutlets}
+                      onSelectionChange={(values) => setSelectedOutlets(values)}
+                      placeholder={`Select ${outletLiteral}`}
+                      className="w-fit min-w-[200px]"
+                      minSelections={0}
+                      maxSelections={10}
+                      showSelectedValues={(selectedValues) => {
+                        const outlets = getAvailableOutlets().filter(outlet => selectedValues.includes(outlet.OutletId.toString()));
+                        if (outlets.length <= 2) {
+                          return `${outletLiteral}: ${outlets.map(outlet => outlet.OutletName).join(', ')}`;
+                        } else {
+                          return `${outletLiteral}: ${outlets.slice(0, 2).map(outlet => outlet.OutletName).join(', ')} +${outlets.length - 2} more`;
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+              {filtersLoading ? (
+                <div className="flex items-center space-x-3 p-4 bg-white/60 rounded-xl border border-modern-light shadow-subtle">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
+                  <span className="text-sm text-gray-600 font-medium">Loading topics and filters...</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
                   <MultiSelect
                     options={topicsData.Topics.map(topic => ({
                       value: topic.Tag,
@@ -904,291 +939,253 @@ function DashboardContent() {
                       }
                     }}
                     placeholder="Select topics"
-                    className="w-fit"
+                    className="w-fit min-w-[200px]"
                     minSelections={1}
                     showSelectedValues={(selectedValues) => { return `Topics: ${selectedValues.map(value => topicsData.Topics.find(topic => topic.Tag === value)?.Label).join(', ')}` }}
                   />
                 </div>
               )}
             </div>
-            {!filtersLoading && <Dialog open={isHierarchyModalOpen} onOpenChange={(open) => {
-              if (open) {
-                handleOpenHierarchyModal();
-              } else {
-                handleCancelHierarchyModal();
-              }
-            }}>
-              <DialogTrigger asChild>
-                <Button
-                  // variant="default"
-                  size="sm"
-                  className="text-xs bg-white text-primary cursor-pointer"
-                >
-                  <Settings className="w-4 h-4 mr-1" />
-                  Edit Topics Hierarchy
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-white max-w-4xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>
-                    <span>Edit Topics Hierarchy</span>
-                    <span className="text-sm text-gray-500 font-normal">
-                      <br />
-                      <br />
-                      <span className="text-sm text-gray-500 font-normal">
-                        Drag and drop to reorder the hierarchy
-                      </span>
-                    </span>
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-6">
-                  {selectedTopics.map((topicTag) => {
-                    const topic = topicsData.Topics.find(t => t.Tag === topicTag);
-                    const hierarchy = tempTopicsHierarchy[topicTag] || topicsHierarchy[topicTag] || [];
-                    const availableFilters = getAvailableFilterTagsForTopic(topicTag);
 
-                    return (
-                      <div key={topicTag} className="border rounded-lg p-4">
-                        <h3 className="text-md font-semibold mb-3 flex items-center justify-between">
-                          <div className={`
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3">
+              {!filtersLoading && (
+                <Dialog open={isHierarchyModalOpen} onOpenChange={(open) => {
+                  if (open) {
+                    handleOpenHierarchyModal();
+                  } else {
+                    handleCancelHierarchyModal();
+                  }
+                }}>
+                  <DialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      className="text-sm bg-white text-blue-500 hover:bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 hover:text-white shadow-card hover:shadow-lg transition-all duration-500 px-4 py-2 rounded-lg"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Edit Topics Hierarchy
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-white max-w-4xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>
+                        <span>Edit Topics Hierarchy</span>
+                        <span className="text-sm text-gray-500 font-normal">
+                          <br />
+                          <br />
+                          <span className="text-sm text-gray-500 font-normal">
+                            Drag and drop to reorder the hierarchy
+                          </span>
+                        </span>
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-6">
+                      {selectedTopics.map((topicTag) => {
+                        const topic = topicsData.Topics.find(t => t.Tag === topicTag);
+                        const hierarchy = tempTopicsHierarchy[topicTag] || topicsHierarchy[topicTag] || [];
+                        const availableFilters = getAvailableFilterTagsForTopic(topicTag);
+
+                        return (
+                          <div key={topicTag} className="border rounded-lg p-4">
+                            <h3 className="text-md font-semibold mb-3 flex items-center justify-between">
+                              <div className={`
                                     flex items-center gap-2
                                     ${hasHierarchyChanged(topicTag, true) ? 'text-primary' : 'text-gray-900'}
                                   `}>
-                            {topic?.Label || topicTag}
-                            <span className="text-xs text-gray-500 font-normal">
-                              ({hierarchy.length} levels)
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {hasHierarchyChanged(topicTag, true) && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => resetTopicHierarchy(topicTag)}
-                                className="text-xs h-7 px-2"
-                              >
-                                <RotateCcw className="w-3 h-3 mr-1" />
-                                Reset
-                              </Button>
-                            )}
-                          </div>
-                        </h3>
-                        <div className="space-y-2">
-                          {hierarchy.map((filterTag, index) => {
-                            const isDragged = draggedItem?.topicTag === topicTag && draggedItem?.index === index;
-                            const isDragOver = dragOverIndex?.topicTag === topicTag && dragOverIndex?.index === index;
-                            const canDrop = draggedItem?.topicTag === topicTag && draggedItem?.index !== index;
+                                {topic?.Label || topicTag}
+                                <span className="text-xs text-gray-500 font-normal">
+                                  ({hierarchy.length} levels)
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {hasHierarchyChanged(topicTag, true) && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => resetTopicHierarchy(topicTag)}
+                                    className="text-xs h-7 px-2"
+                                  >
+                                    <RotateCcw className="w-3 h-3 mr-1" />
+                                    Reset
+                                  </Button>
+                                )}
+                              </div>
+                            </h3>
+                            <div className="space-y-2">
+                              {hierarchy.map((filterTag, index) => {
+                                const isDragged = draggedItem?.topicTag === topicTag && draggedItem?.index === index;
+                                const isDragOver = dragOverIndex?.topicTag === topicTag && dragOverIndex?.index === index;
+                                const canDrop = draggedItem?.topicTag === topicTag && draggedItem?.index !== index;
 
-                            return (
-                              <div key={`${topicTag}-${filterTag}-${index}`}>
-                                {/* Drop preview indicator */}
-                                {/* {isDragOver && canDrop && (
+                                return (
+                                  <div key={`${topicTag}-${filterTag}-${index}`}>
+                                    {/* Drop preview indicator */}
+                                    {/* {isDragOver && canDrop && (
                                   <div className="h-0.5 bg-primary rounded-full mx-3 mb-1" />
                                 )} */}
 
-                                <div
-                                  draggable
-                                  onDragStart={(e) => handleDragStart(e, topicTag, index)}
-                                  onDragEnd={handleDragEnd}
-                                  onDragOver={(e) => handleDragOver(e, topicTag, index)}
-                                  onDragLeave={handleDragLeave}
-                                  onDrop={(e) => handleDrop(e, topicTag, index)}
-                                  style={{
-                                    paddingLeft: `${(index + 1) * 10}px`
-                                  }}
-                                  className={`
+                                    <div
+                                      draggable
+                                      onDragStart={(e) => handleDragStart(e, topicTag, index)}
+                                      onDragEnd={handleDragEnd}
+                                      onDragOver={(e) => handleDragOver(e, topicTag, index)}
+                                      onDragLeave={handleDragLeave}
+                                      onDrop={(e) => handleDrop(e, topicTag, index)}
+                                      style={{
+                                        paddingLeft: `${(index + 1) * 10}px`
+                                      }}
+                                      className={`
                                     flex items-center gap-3 p-2 rounded-md cursor-move transition-colors duration-150
                                     ${isDragged
-                                      ? 'opacity-60 bg-blue-50 border border-blue-300'
-                                      : isDragOver && canDrop
-                                        ? 'bg-blue-50 border border-blue-200'
-                                        : 'bg-gray-50 hover:bg-gray-100 border border-transparent'
-                                    }
+                                          ? 'opacity-60 bg-blue-50 border border-blue-300'
+                                          : isDragOver && canDrop
+                                            ? 'bg-blue-50 border border-blue-200'
+                                            : 'bg-gray-50 hover:bg-gray-100 border border-transparent'
+                                        }
                                     ${!canDrop && draggedItem && draggedItem.topicTag !== topicTag ? 'opacity-40' : ''}
                                   `}
-                                >
-                                  <GripVertical className={`w-4 h-4 ${isDragged ? 'text-blue-500' : 'text-gray-400'}`} />
-                                  <span className={`text-xs font-medium ${isDragged ? 'text-blue-600' : 'text-gray-600'}`}>
-                                    Level <span className={`${isDragged ? 'text-blue-700' : 'text-slate-600'} font-normal`}>{index}</span>
-                                  </span>
-                                  <span className={`text-sm flex-1 
+                                    >
+                                      <GripVertical className={`w-4 h-4 ${isDragged ? 'text-blue-500' : 'text-gray-400'}`} />
+                                      <span className={`text-xs font-medium ${isDragged ? 'text-blue-600' : 'text-gray-600'}`}>
+                                        Level <span className={`${isDragged ? 'text-blue-700' : 'text-slate-600'} font-normal`}>{index}</span>
+                                      </span>
+                                      <span className={`text-sm flex-1 
                                                     ${getMixedFontClass()} 
                                                     ${isDragged ? 'text-blue-700' : ''}
                                                     ${isDefaultFilter(topicTag, filterTag) ? 'font-semibold text-slate-700' : 'text-slate-500'}`}>
-                                    {/* {isDefaultFilter(topicTag, filterTag) && (
+                                        {/* {isDefaultFilter(topicTag, filterTag) && (
                                       <span className="text-xs text-blue-600 mr-1">🔄</span>
                                     )} */}
-                                    {getFilterLabel(filterTag)}
-                                    {/* {isDefaultFilter(topicTag, filterTag) && (
+                                        {getFilterLabel(filterTag)}
+                                        {/* {isDefaultFilter(topicTag, filterTag) && (
                                       <span className="text-xs text-gray-500 ml-1">(Default)</span>
                                     )} */}
-                                  </span>
-                                  {/* Remove button for all filters */}
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => removeFilterFromHierarchy(topicTag, filterTag)}
-                                    // className="text-xs h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                                    className="text-xs px-2 text-red-500 hover:text-red-700 cursor-pointer"
-                                    title={`Remove ${getFilterLabel(filterTag)}`}
-                                  >
-                                    {/* <X className="w-3 h-3" /> */}
-                                    Remove
-                                  </Button>
-                                </div>
-                              </div>
-                            );
-                          })}
+                                      </span>
+                                      {/* Remove button for all filters */}
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => removeFilterFromHierarchy(topicTag, filterTag)}
+                                        // className="text-xs h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                                        className="text-xs px-2 text-red-500 hover:text-red-700 cursor-pointer"
+                                        title={`Remove ${getFilterLabel(filterTag)}`}
+                                      >
+                                        {/* <X className="w-3 h-3" /> */}
+                                        Remove
+                                      </Button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
 
-                          {/* Drop zone at the end */}
-                          {draggedItem?.topicTag === topicTag && (
-                            <div
-                              onDragOver={(e) => handleDragOver(e, topicTag, hierarchy.length)}
-                              onDragLeave={handleDragLeave}
-                              onDrop={(e) => handleDrop(e, topicTag, hierarchy.length)}
-                              className={`
+                              {/* Drop zone at the end */}
+                              {draggedItem?.topicTag === topicTag && (
+                                <div
+                                  onDragOver={(e) => handleDragOver(e, topicTag, hierarchy.length)}
+                                  onDragLeave={handleDragLeave}
+                                  onDrop={(e) => handleDrop(e, topicTag, hierarchy.length)}
+                                  className={`
                                 h-1 rounded-md transition-colors duration-150
                                 ${dragOverIndex?.topicTag === topicTag && dragOverIndex?.index === hierarchy.length
-                                  ? 'bg-blue-500'
-                                  : 'bg-transparent hover:bg-blue-100'
-                                }
+                                      ? 'bg-blue-500'
+                                      : 'bg-transparent hover:bg-blue-100'
+                                    }
                               `}
-                            />
-                          )}
-                          {availableFilters.length > 0 && (
-                            <div className="mt-3 pt-3 border-t border-gray-100">
-                              {/* <div className="flex items-center gap-2">
+                                />
+                              )}
+                              {availableFilters.length > 0 && (
+                                <div className="mt-3 pt-3 border-t border-gray-100">
+                                  {/* <div className="flex items-center gap-2">
                                  <Plus className="w-4 h-4 text-gray-500" />
                                  <span className="text-xs font-medium text-gray-600">Add Filter</span>
                                </div> */}
-                              <select
-                                className="mt-2 w-full text-sm border border-gray-200 rounded-md px-3 py-2 bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                onChange={(e) => {
-                                  if (e.target.value) {
-                                    addFilterToHierarchy(topicTag, e.target.value);
-                                    e.target.value = '';
-                                  }
-                                }}
-                                defaultValue=""
-                              >
-                                <option value="" disabled>Select a filter to add...</option>
-                                {availableFilters.map(filterTag => (
-                                  <option key={filterTag} value={filterTag}>
-                                    {/* {isDefaultFilter(topicTag, filterTag) 
+                                  <select
+                                    className="mt-2 w-full text-sm border border-gray-200 rounded-md px-3 py-2 bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                    onChange={(e) => {
+                                      if (e.target.value) {
+                                        addFilterToHierarchy(topicTag, e.target.value);
+                                        e.target.value = '';
+                                      }
+                                    }}
+                                    defaultValue=""
+                                  >
+                                    <option value="" disabled>Select a filter to add...</option>
+                                    {availableFilters.map(filterTag => (
+                                      <option key={filterTag} value={filterTag}>
+                                        {/* {isDefaultFilter(topicTag, filterTag) 
                                       ? `🔄 ${getFilterLabel(filterTag)} (Default)` 
                                       : getFilterLabel(filterTag)
                                     } */}
-                                    {getFilterLabel(filterTag)}
-                                  </option>
-                                ))}
-                              </select>
+                                        {getFilterLabel(filterTag)}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    onClick={handleCancelHierarchyModal}
-                    className="text-xs"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleCloseHierarchyModal}
-                    className="text-xs text-white"
-                  >
-                    Save Changes
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>}
-
-
-
-            {/* <div className="space-y-2 flex items-bottom justify-end gap-2 justify-self-end">
-              
-
-              <MultiSelect
-                options={topicsData.Topics.map(topic => ({
-                  value: topic.TopicTag,
-                  label: topic.TopicLabel
-                }))}
-                selectedValues={selectedTopics}
-                onSelectionChange={(values) => {
-                  setSelectedTopics(values);
-                  if (values.length === 0) {
-                    setFilterState({});
-                  }
-                }}
-                placeholder="Select topics"
-                className="w-fit"
-                minSelections={1}
-                showSelectedValues={(selectedValues) => { return `Topics: ${selectedValues.map(value => topicsData.Topics.find(topic => topic.TopicTag === value)?.TopicLabel).join(', ')}` }}
-              />
-            </div> */}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+                      <Button
+                        variant="outline"
+                        onClick={handleCancelHierarchyModal}
+                        className="text-xs"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleCloseHierarchyModal}
+                        className="text-xs text-white"
+                      >
+                        Save Changes
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Topics Selection */}
-        {/* <div className="mb-8 flex justify-between items-center">
-          <div className="space-y-0 flex items-center gap-4">
-            <div className="space-y-0 flex items-center gap-2">
-              <Label className="text-lg font-bold text-gray-900">Topics</Label>
-              <MultiSelect
-                options={topicsData.Topics.map(topic => ({
-                  value: topic.TopicTag,
-                  label: topic.TopicLabel
-                }))}
-                selectedValues={selectedTopics}
-                onSelectionChange={(values) => {
-                  setSelectedTopics(values);
-                  if (values.length === 0) {
-                    setFilterState({});
-                  }
-                }}
-                placeholder="Select topics"
-                className="w-48"
-                minSelections={1}
-              />
-            </div>
-          </div>
-        </div> */}
 
         {dashboardData && (selectedAreas.length > 0 && selectedOutlets.length > 0 && selectedBusinessDay) && (
           filtersLoading ? (
-            <Card className="mb-4 p-4 bg-white">
-              <CardHeader>
-                {/* <CardTitle className="text-lg font-bold text-gray-900">Custom Filters</CardTitle> */}
-              </CardHeader>
-              <CardContent className="flex flex-col items-center justify-center py-0">
-                <div className="flex flex-col items-center space-y-4">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                  <div className="text-center">
-                    <p className="text-lg font-medium text-gray-900">Loading Filters</p>
-                    <p className="text-sm text-gray-600">Fetching available filters and topics...</p>
+            <Card className="mb-4 bg-gradient-card shadow-modern border-modern-light animate-fade-in">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <div className="flex flex-col items-center space-y-6">
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600"></div>
+                    <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-blue-400 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+                  </div>
+                  <div className="text-center space-y-2">
+                    <p className="text-heading text-gray-900">Loading Filters</p>
+                    <p className="text-caption">Fetching available filters and topics...</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
           ) : (
-            <Card className={
-              `mb-4 p-4 px-1 gap-1 group ${Object.keys(filterState).length > 0 ? 'bg-white' : 'bg-white/50'}`
-            }>
-              <CardHeader>
+            <Card className={`mb-2 gap-2 bg-gradient-card shadow-modern border-modern-light animate-slide-up group transition-all duration-300 ${Object.keys(filterState).length > 0 ? 'ring-2 ring-blue-100' : ''}`}>
+              <CardHeader className="pb-0">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-bold text-gray-900">Custom Filters</CardTitle>
-                  <div className="flex items-center gap-2">
-
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg">
+                      <FilterIcon className="w-3 h-3 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-heading text-gray-900">Custom Filters</CardTitle>
+                      <p className="text-caption">Refine your data view with advanced filtering options</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
                     {Object.keys(filterState).some(key => filterState[key]?.length > 0) && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setFilterState({})}
-                        className="text-xs"
+                        className="text-sm border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
                       >
                         Clear All Filters
                       </Button>
@@ -1196,76 +1193,110 @@ function DashboardContent() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className={`flex flex-col ${Object.keys(filterState).length > 0 ? 'gap-4' : 'gap-1'}`}>
-
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-
-
-                  {/* Dynamic Filters */}
+              <CardContent className={`flex flex-col ${Object.keys(filterState).length > 0 ? 'gap-6' : 'gap-4'}`}>
+                {/* Filter Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
                   {availableFilters.map((filter) => (
-                    <div key={filter.Tag} className="space-y-2">
-                      <Label className="flex text-sm items-end gap-2">
-                        <span className="text-sm pt-1">{filter.Label}</span>
-                        <div className="text-xs flex items-end gap-2 font-medium text-primary opacity-50 group-hover:opacity-100 duration-300 transition-all">{resolveAppliesToTopic(filter.Tag)}</div>
-                      </Label>
-                      <MultiSelect
-                        options={filter.Values?.map(value => ({
-                          value: value.Code,
-                          label: value.Label
-                        })) || []}
-                        selectedValues={filterState[filter.Tag] || []}
-                        onSelectionChange={(values) => handleFilterChange(filter.Tag, values)}
-                        placeholder={`Select ${filter.Label}`}
-                        className="w-full"
-                      />
+                    <div key={filter.Tag} className="space-y-3 group">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                          <span>{filter.Label}</span>
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            {resolveAppliesToTopic(filter.Tag)}
+                          </div>
+                        </Label>
+                      </div>
+                      <div className="relative">
+                        <MultiSelect
+                          options={filter.Values?.map(value => ({
+                            value: value.Code,
+                            label: value.Label
+                          })) || []}
+                          selectedValues={filterState[filter.Tag] || []}
+                          onSelectionChange={(values) => handleFilterChange(filter.Tag, values)}
+                          placeholder={`Select ${filter.Label}`}
+                          className="w-full"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {/* selected filters */}
-                  {Object.keys(filterState).map((key) => {
-                    const filter = filtersData.Filters.find(f => f.Tag === key);
-                    return (
-                      <Badge key={key} className="bg-gray-100 rounded-md p-1 px-2 group">
-                        <Label>{filter?.Label}</Label>
-                        <p className={getMixedFontClass()}>
-                          {(() => {
-                            const selectedLabels = filterState[key].map(code => {
-                              const value = filter?.Values?.find(v => v.Code === code);
-                              return value?.Label || code;
-                            });
 
-                            if (selectedLabels.length <= 3) {
-                              return selectedLabels.join(', ');
-                            } else {
-                              const firstThree = selectedLabels.slice(0, 3);
-                              const remaining = selectedLabels.length - 3;
-                              return <span className="flex items-center gap-1">
-                                <span>{firstThree.join(', ')}</span>
-                                <span className='text-primary'> + {remaining}</span>
-                              </span>;
-                            }
-                          })()}
-                        </p>
-                        <Button variant="ghost" size="icon" onClick={() => removeFilter(key)} className="ml-2 group-hover:bg-gray-200 hover:text-red-700 cursor-pointer">
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </Badge>
-                    );
-                  })}
-                </div>
+                {/* Selected Filters Display */}
+                {Object.keys(filterState).length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-4 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                      <span className="text-sm font-semibold text-gray-900">Active Filters</span>
+                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                        {Object.keys(filterState).length} applied
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      {Object.keys(filterState).map((key) => {
+                        const filter = filtersData.Filters.find(f => f.Tag === key);
+                        return (
+                          <div key={key} className="group">
+                            <Badge className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-900 rounded-lg px-3 py-2 shadow-subtle hover:shadow-md transition-all duration-200">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-semibold">{filter?.Label}:</span>
+                                <span className={getMixedFontClass()}>
+                                  {(() => {
+                                    const selectedLabels = filterState[key].map(code => {
+                                      const value = filter?.Values?.find(v => v.Code === code);
+                                      return value?.Label || code;
+                                    });
+
+                                    if (selectedLabels.length <= 2) {
+                                      return selectedLabels.join(', ');
+                                    } else {
+                                      const firstTwo = selectedLabels.slice(0, 2);
+                                      const remaining = selectedLabels.length - 2;
+                                      return (
+                                        <span className="flex items-center gap-1">
+                                          <span>{firstTwo.join(', ')}</span>
+                                          <span className="text-blue-600 font-semibold">+{remaining}</span>
+                                        </span>
+                                      );
+                                    }
+                                  })()}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => removeFilter(key)}
+                                  className="ml-1 h-5 w-5 p-0 hover:bg-red-100 hover:text-red-600 transition-all duration-200"
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </Badge>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Filter Button - Only show when there are unapplied changes */}
                 {hasUnappliedChanges() && (
-                  <div className="flex justify-center mt-4">
+                  <div className="flex justify-center pt-4 ">
                     <Button
                       onClick={handleApplyFilters}
-                      className="bg-primary text-white px-6 py-2 animate-pulse hover:font-semibold cursor-pointer"
+                      className="bg-gradient-to-r cursor-pointer from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-3 rounded-lg shadow-card hover:shadow-lg transition-all duration-200 font-semibold animate-pulse"
                       disabled={loading}
-                      variant="outline"
                     >
-                      {loading ? 'Loading...' : 'Apply Filters'}
+                      {loading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                          <span>Applying...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <FilterIcon className="w-4 h-4" />
+                          <span>Apply Filters</span>
+                        </div>
+                      )}
                     </Button>
                   </div>
                 )}
@@ -1276,51 +1307,60 @@ function DashboardContent() {
 
         {/* No Data Message */}
         {!dashboardData && (selectedAreas.length > 0 && selectedOutlets.length > 0 && selectedBusinessDay) && (
-          <Card className="mb-8 p-4 bg-white">
-            <CardContent className="p-6 text-center">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          <Card className="mb-2 bg-gradient-card shadow-modern border-modern-light animate-fade-in">
+            <CardContent className="p-12 text-center">
+              <div className="w-32 h-32 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center mx-auto mb-8">
+                <svg className="w-16 h-16 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-3">No Data Available</h2>
-              <p className="text-gray-600 mb-6">
-                There&apos;s no data available for the selected combination of area, outlet, and date.
-              </p>
-              <div className="space-y-3">
-                <p className="text-sm text-gray-500">
-                  <span className="font-medium">Areas:</span> {selectedAreas.length > 0 ? selectedAreas.join(', ') : 'Not selected'}
+              <div className="space-y-4">
+                <h2 className="text-display text-gray-900">No Data Available</h2>
+                <p className="text-body text-gray-600 max-w-md mx-auto">
+                  There&apos;s no reconciliation data available for the selected combination of area, outlet, and date.
                 </p>
-                <p className="text-sm text-gray-500">
-                  <span className="font-medium">Outlets:</span> {selectedOutlets.length > 0 ? selectedOutlets.join(', ') : 'Not selected'}
-                </p>
-                <div className="flex flex-col md:flex-row gap-2 md:gap-0 items-end justify-center space-x-10 mt-0">
+
+                <div className="flex flex-wrap justify-center gap-4 mt-8">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+                    <span className="text-sm font-medium text-blue-900">Areas:</span>
+                    <span className="text-sm text-blue-700 ml-1">{selectedAreas.length > 0 ? selectedAreas.join(', ') : 'Not selected'}</span>
+                  </div>
+                  <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2">
+                    <span className="text-sm font-medium text-green-900">Outlets:</span>
+                    <span className="text-sm text-green-700 ml-1">{selectedOutlets.length > 0 ? selectedOutlets.join(', ') : 'Not selected'}</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-row items-center justify-center sm:flex-row items-center gap-4 p-6 bg-white/60 rounded-xl border border-modern-light shadow-subtle mt-8">
                   <Button
                     variant="outline"
                     onClick={() => navigateToDate('prev')}
-                    className="flex items-center space-x-2 cursor-pointer text-slate-400 hover:text-slate-600 hover:bg-gray-200"
+                    className="flex items-center space-x-2 cursor-pointer text-slate-600 hover:text-slate-800 hover:bg-blue-50 border-blue-200 hover:border-blue-300 transition-all duration-200 px-4 py-2 rounded-lg"
                     disabled={!selectedBusinessDay}
                   >
-                    <span><ChevronLeft className="h-4 w-4" /></span>
-                    <span>{selectedBusinessDay ? formatDate(getPreviousDay(selectedBusinessDay)) : ''}</span>
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="text-sm font-medium">{selectedBusinessDay ? formatDate(getPreviousDay(selectedBusinessDay)) : ''}</span>
                   </Button>
-                  <div className="font-semibold flex  items-center space-x-2 gap-2">
-                    <span className='text-sm'>Business Day:</span>
+
+                  <div className="flex items-center space-x-0">
+                    {/* <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"></div> */}
+                    <span className="text-xs min-w-21 font-semibold text-gray-700 nowrap">Business Day:</span>
                     <Input
                       type="date"
                       value={selectedBusinessDay || ''}
                       onChange={(e) => setSelectedBusinessDay(e.target.value)}
-                      className="w-auto text-slate-900 text-semibold"
+                      className="text-slate-900 font-semibold border-blue-200 focus:border-blue-400 focus:ring-blue-100 transition-all duration-200"
                     />
                   </div>
+
                   <Button
                     variant="outline"
                     onClick={() => navigateToDate('next')}
-                    className="flex items-center space-x-2 cursor-pointer text-slate-400 hover:text-slate-600 hover:bg-gray-200"
+                    className="flex items-center space-x-2 cursor-pointer text-slate-600 hover:text-slate-800 hover:bg-blue-50 border-blue-200 hover:border-blue-300 transition-all duration-200 px-4 py-2 rounded-lg"
                     disabled={!selectedBusinessDay}
                   >
-                    <span>{selectedBusinessDay ? formatDate(getNextDay(selectedBusinessDay)) : ''}</span>
-                    <span><ChevronRight className="h-4 w-4" /></span>
+                    <span className="text-sm font-medium">{selectedBusinessDay ? formatDate(getNextDay(selectedBusinessDay)) : ''}</span>
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -1328,60 +1368,92 @@ function DashboardContent() {
           </Card>
         )}
 
-        {!dashboardData && (selectedAreas.length === 0 || selectedOutlets.length === 0 || !selectedBusinessDay) && (<Card className="mb-8 p-4 bg-white">
-          <CardContent className="p-3 text-center">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            {/* <h2 className="text-2xl font-semibold text-gray-900 mb-3">Please select an area and outlet</h2> */}
-            <p className="text-gray-600 mb-0">
-              Please select {areaLiteral} and {outletLiteral} to continue.
-            </p>
-          </CardContent>
-        </Card>)}
+        {!dashboardData && (selectedAreas.length === 0 || selectedOutlets.length === 0 || !selectedBusinessDay) && (
+          <Card className="mb-2 bg-gradient-card shadow-modern border-modern-light animate-fade-in">
+            <CardContent className="p-12 text-center">
+              <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-8">
+                <svg className="w-16 h-16 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div className="space-y-4 flex flex-col items-center justify-center">
+                <h2 className="text-display text-gray-900">Complete Your Selection</h2>
+                <p className="text-body text-gray-600 max-w-md mx-auto">
+                  Please select {areaLiteral} and {outletLiteral} to view your reconciliation data.
+                </p>
+
+                <div className="flex justify-center items-center gap-4 mt-8">
+                  <div className={`px-4 py-2 rounded-lg border ${selectedAreas.length > 0 ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
+                    <span className="text-sm font-medium">{areaLiteral}:</span>
+                    <span className="text-sm ml-1">{selectedAreas.length > 0 ? 'Selected' : 'Required'}</span>
+                  </div>
+                  <div className={`px-4 py-2 rounded-lg border ${selectedOutlets.length > 0 ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
+                    <span className="text-sm font-medium">{outletLiteral}:</span>
+                    <span className="text-sm ml-1">{selectedOutlets.length > 0 ? 'Selected' : 'Required'}</span>
+                  </div>
+                  <div className={`px-4 py-2 rounded-lg border ${selectedBusinessDay ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
+                    <span className="text-sm font-medium">Business Day:</span>
+                    <span className="text-sm ml-1">{selectedBusinessDay ? 'Today' : 'Required'}</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Main Dashboard Table */}
         {dashboardData && (
-          <Card className="bg-white p-4 gap-2">
-            <CardHeader>
-              <div className="text-center">
-                {/* <h2 className="text-2xl font-bold text-gray-900">
-                {dashboardData.AreaCode} ({dashboardData.OutletCode}) 
-              </h2> */}
-                <div className="flex flex-col md:flex-row gap-2 md:gap-0 items-end justify-center space-x-10 mt-0">
+          <Card className="bg-gradient-card p-2 gap-0 shadow-modern border-modern-light animate-fade-in">
+            <CardHeader className="pb-0">
+              <div className="flex flex-col items-center space-y-0">
+                {/* <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <h2 className="text-heading text-gray-900">Reconciliation Data</h2>
+                    <p className="text-caption">Financial reconciliation overview for selected period</p>
+                  </div>
+                </div> */}
+
+                {/* Enhanced Date Navigation */}
+                <div className="flex flex-col sm:flex-row items-center gap-4 p-2 py-2 bg-white/60 rounded-xl border border-modern-light shadow-subtle">
                   <Button
                     variant="outline"
                     onClick={() => navigateToDate('prev')}
-                    className="flex items-center space-x-2 cursor-pointer text-slate-400 hover:text-slate-600 hover:bg-gray-200"
+                    className="flex items-center space-x-2 cursor-pointer text-slate-600 hover:text-slate-800 hover:bg-blue-50 border-blue-200 hover:border-blue-300 transition-all duration-200 px-4 py-2 rounded-lg"
                     disabled={!selectedBusinessDay}
                   >
-                    <span><ChevronLeft className="h-4 w-4" /></span>
-                    <span>{selectedBusinessDay ? formatDate(getPreviousDay(selectedBusinessDay)) : ''}</span>
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="text-sm font-medium">{selectedBusinessDay ? formatDate(getPreviousDay(selectedBusinessDay)) : ''}</span>
                   </Button>
-                  <div className="font-semibold flex  items-center space-x-2 gap-2">
-                    <span className='text-sm'>Business Day:</span>
+
+                  <div className="flex items-center space-x-3">
+                    {/* <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"></div> */}
+                    <span className="text-xs min-w-21 font-semibold text-gray-700 nowrap">Business Day:</span>
                     <Input
                       type="date"
                       value={selectedBusinessDay || ''}
                       onChange={(e) => setSelectedBusinessDay(e.target.value)}
-                      className="w-auto text-slate-900 text-semibold"
+                      className="text-slate-900 font-semibold border-blue-200 focus:border-blue-400 focus:ring-blue-100 transition-all duration-200"
                     />
                   </div>
+
                   <Button
                     variant="outline"
                     onClick={() => navigateToDate('next')}
-                    className="flex items-center space-x-2 cursor-pointer text-slate-400 hover:text-slate-600 hover:bg-gray-200"
+                    className="flex items-center space-x-2 cursor-pointer text-slate-600 hover:text-slate-800 hover:bg-blue-50 border-blue-200 hover:border-blue-300 transition-all duration-200 px-4 py-2 rounded-lg"
                     disabled={!selectedBusinessDay}
                   >
-                    <span>{selectedBusinessDay ? formatDate(getNextDay(selectedBusinessDay)) : ''}</span>
-                    <span><ChevronRight className="h-4 w-4" /></span>
+                    <span className="text-sm font-medium">{selectedBusinessDay ? formatDate(getNextDay(selectedBusinessDay)) : ''}</span>
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6 py-2">
               <ReconciliationTable
                 data={dashboardData.ChildNodes}
                 filterState={{}}
@@ -1406,10 +1478,16 @@ function DashboardContent() {
 export default function Dashboard() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 flex items-center justify-center">
+        <div className="text-center space-y-6">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-24 w-24 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+            <div className="absolute inset-0 rounded-full h-24 w-24 border-4 border-transparent border-t-blue-400 animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-heading text-gray-900">Initializing Dashboard</p>
+            <p className="text-caption">Setting up your reconciliation workspace...</p>
+          </div>
         </div>
       </div>
     }>
