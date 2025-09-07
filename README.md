@@ -18,6 +18,21 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+# API Configuration
+NEXT_PUBLIC_API_BASE_URL
+API_KEY
+```
+
+- `NEXT_PUBLIC_API_BASE_URL`: The base URL for the external API
+- `API_KEY`: The API key for authentication
+
+If these environment variables are not set, the application will use the default values defined in `src/lib/config.ts`.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More

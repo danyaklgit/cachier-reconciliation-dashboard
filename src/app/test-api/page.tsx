@@ -213,7 +213,7 @@ export default function TestApiPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2 text-sm text-gray-600">
-              <p><strong>Endpoint:</strong> http://pluto.swittlelab.com:5255/dashboard</p>
+              <p><strong>Endpoint:</strong> {process.env.NEXT_PUBLIC_API_BASE_URL || 'http://pluto.swittlelab.com:5255/dashboard'}</p>
               <p><strong>Method:</strong> POST</p>
               <p><strong>Headers:</strong> x-api-key, Content-Type: application/json</p>
               <p><strong>Parameters:</strong> LanguageCode, MerchantCode, BusinessDay, DashboardHierarchy</p>

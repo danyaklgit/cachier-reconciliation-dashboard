@@ -9,7 +9,8 @@ import { ChevronLeft, ChevronRight, CreditCard, FilterIcon, X, Settings, GripVer
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ReconciliationTable } from '@/components/ReconciliationTable';
-import { DashboardData, Filter, FilterState, Topic } from '@/types';
+import { Transaction } from '@/components/Transaction';
+import { DashboardData, DataNode, Filter, FilterState, Topic } from '@/types';
 import { getMixedFontClass } from '@/lib/font-utils';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +52,7 @@ function DashboardContent() {
   const [tempTopicsHierarchy, setTempTopicsHierarchy] = useState<{ [topicTag: string]: string[] }>({});
   const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
   const [tenantsLoading, setTenantsLoading] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<DataNode | null>(null);
 
   // New selection states
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
@@ -678,6 +680,14 @@ function DashboardContent() {
     setAppliedFilterState(filterState);
   };
 
+  const viewTransaction = (row: DataNode) => {
+    setSelectedTransaction(row);
+  };
+
+  const closeTransaction = () => {
+    setSelectedTransaction(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -725,6 +735,8 @@ function DashboardContent() {
   const areaLiteral = "DC"
   const outletLiteral = "Cashier"
   const tenantLiteral = "Tenant"
+
+
   return (
     <div className="min-h-screen bg-[#f4f5f7]">
       {/* Header */}
@@ -1072,7 +1084,7 @@ function DashboardContent() {
                   </Button>
                   <Button
                     onClick={handleCloseHierarchyModal}
-                    className="text-xs"
+                    className="text-xs text-white"
                   >
                     Save Changes
                   </Button>
@@ -1358,11 +1370,20 @@ function DashboardContent() {
               <ReconciliationTable
                 data={dashboardData.ChildNodes}
                 filterState={{}}
+                viewTransaction={viewTransaction}
               />
             </CardContent>
           </Card>
         )}
       </div>
+
+      {/* Transaction Popup */}
+      {selectedTransaction && (
+        <Transaction
+          row={selectedTransaction}
+          onClose={closeTransaction}
+        />
+      )}
     </div>
   );
 }

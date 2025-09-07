@@ -23,6 +23,7 @@ import { toast } from 'react-hot-toast';
 interface ReconciliationTableProps {
   data: DataNode[];
   filterState: FilterState;
+  viewTransaction: (row: DataNode) => void;
 }
 
 const formatNumber = (num: number): string => {
@@ -61,7 +62,7 @@ const getCellStyle = (value: number, columnType: string) => {
     case 'claimed':
     case 'settled':
     case 'awaitingSettlement':
-      return 'text-blue-400 font-medium';
+      return 'text-[#0a49e0] font-medium';
     default:
       return 'text-green-600 font-medium';
   }
@@ -80,7 +81,7 @@ const getCellStyle = (value: number, columnType: string) => {
   // }
 };
 
-export function ReconciliationTable({ data, filterState }: ReconciliationTableProps) {
+export function ReconciliationTable({ data, filterState, viewTransaction }: ReconciliationTableProps) {
   const [expanded, setExpanded] = useState<ExpandedState>({});
   const [isExpanding, setIsExpanding] = useState(false);
   const expandTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -418,10 +419,10 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
               variant="ghost"
               size="sm"
               onClick={() => {
-                // TODO: Implement view action
-                toast.success('View action clicked for row:' + row.original.Id, {
-                  position: 'bottom-right',
-                });
+                viewTransaction(row.original);
+                // toast.success('View action clicked for row:' + row.original.Id, {
+                //   position: 'bottom-right',
+                // });
                 // console.log('View action clicked for row:', row.original);
               }}
               className="text-xs text-primary px-3 py-1 cursor-pointer"
@@ -506,7 +507,7 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
       case '2_actions_actions':
         return 'bg-blue-100';
       case 'topic':
-        return 'bg-primary opacity-80';
+        return 'bg-blue-300 opacity-80';
       default:
         return 'bg-white';
     }

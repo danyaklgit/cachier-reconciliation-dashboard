@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { API_CONFIG } from '@/lib/config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,10 +17,10 @@ export async function POST(request: NextRequest) {
     
     console.log('Request body:', JSON.stringify(requestBody, null, 2));
     
-    const response = await fetch('http://pluto.swittlelab.com:5255/dashboard', {
+    const response = await fetch(API_CONFIG.BASE_URL, {
       method: 'POST',
       headers: {
-        'x-api-key': 'p9A!t7$KzQwR3xM#Lf2VbJ8hYcN6sZ@G',
+        'x-api-key': API_CONFIG.API_KEY,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody)

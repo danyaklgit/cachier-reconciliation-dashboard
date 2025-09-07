@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { API_CONFIG } from '@/lib/config';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { areaId, outletId, languageCode = 'ar' } = body;
     
-    const apiUrl = 'http://pluto.swittlelab.com:5255/dashboard';
-    const apiKey = 'p9A!t7$KzQwR3xM#Lf2VbJ8hYcN6sZ@G';
+    const apiUrl = API_CONFIG.BASE_URL;
+    const apiKey = API_CONFIG.API_KEY;
     
     const requestBody = {
       parameters: [
