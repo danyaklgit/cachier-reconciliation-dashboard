@@ -650,26 +650,26 @@ function DashboardContent() {
   const hasUnappliedChanges = () => {
     const currentKeys = Object.keys(filterState);
     const appliedKeys = Object.keys(appliedFilterState);
-    
+
     // Different number of filters
     if (currentKeys.length !== appliedKeys.length) return true;
-    
+
     // Check if any filter values are different
     for (const key of currentKeys) {
       const currentValues = filterState[key] || [];
       const appliedValues = appliedFilterState[key] || [];
-      
+
       if (currentValues.length !== appliedValues.length) return true;
-      
+
       // Check if values are different
       const currentSorted = [...currentValues].sort();
       const appliedSorted = [...appliedValues].sort();
-      
+
       for (let i = 0; i < currentSorted.length; i++) {
         if (currentSorted[i] !== appliedSorted[i]) return true;
       }
     }
-    
+
     return false;
   };
 
@@ -789,13 +789,14 @@ function DashboardContent() {
                 <h1 className="text-xl font-bold text-gray-900">Reconciliation Dashboard</h1>
 
               </div>
-              <div className="space-y-2">
-                {tenantsLoading ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                    <span className="text-sm text-gray-600">Loading tenants...</span>
-                  </div>
-                ) : (
+              {tenantsLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-sm text-gray-600">Loading tenants...</span>
+                </div>
+              ) : (<>
+                <div className="space-y-2">
+
                   <MultiSelect
                     options={tenantsData.Tenants.map(tenant => ({
                       value: tenant.TenantId.toString(),
@@ -809,52 +810,53 @@ function DashboardContent() {
                     minSelections={0}
                     maxSelections={1}
                   />
-                )}
-              </div>
-              <div className="space-y-2 flex items-center gap-2">
-                <MultiSelect
-                  options={getAvailableAreas().map(area => ({
-                    value: area.AreaId.toString(),
-                    label: `${area.AreaCode} - ${area.AreaName}`
-                  }))}
-                  selectedValues={selectedAreas}
-                  onSelectionChange={(values) => setSelectedAreas(values)}
-                  placeholder={`Select ${areaLiteral}`}
-                  className="w-fit"
-                  minSelections={0}
-                  maxSelections={10}
-                  showSelectedValues={(selectedValues) => {
-                    const areas = getAvailableAreas().filter(area => selectedValues.includes(area.AreaId.toString()));
-                    if (areas.length <= 2) {
-                      return `${areaLiteral}: ${areas.map(area => area.AreaName).join(', ')}`;
-                    } else {
-                      return `${areaLiteral}: ${areas.slice(0, 2).map(area => area.AreaName).join(', ')} +${areas.length - 2} more`;
-                    }
-                  }}
-                />
-              </div>
-              <div className="space-y-2">
-                <MultiSelect
-                  options={getAvailableOutlets().map(outlet => ({
-                    value: outlet.OutletId.toString(),
-                    label: `${outlet.OutletCode} - ${outlet.OutletName}`
-                  }))}
-                  selectedValues={selectedOutlets}
-                  onSelectionChange={(values) => setSelectedOutlets(values)}
-                  placeholder={`Select ${outletLiteral}`}
-                  className="w-fit"
-                  minSelections={0}
-                  maxSelections={10}
-                  showSelectedValues={(selectedValues) => {
-                    const outlets = getAvailableOutlets().filter(outlet => selectedValues.includes(outlet.OutletId.toString()));
-                    if (outlets.length <= 2) {
-                      return `${outletLiteral}: ${outlets.map(outlet => outlet.OutletName).join(', ')}`;
-                    } else {
-                      return `${outletLiteral}: ${outlets.slice(0, 2).map(outlet => outlet.OutletName).join(', ')} +${outlets.length - 2} more`;
-                    }
-                  }}
-                />
-              </div>
+
+                </div>
+                <div className="space-y-2 flex items-center gap-2">
+                  <MultiSelect
+                    options={getAvailableAreas().map(area => ({
+                      value: area.AreaId.toString(),
+                      label: `${area.AreaCode} - ${area.AreaName}`
+                    }))}
+                    selectedValues={selectedAreas}
+                    onSelectionChange={(values) => setSelectedAreas(values)}
+                    placeholder={`Select ${areaLiteral}`}
+                    className="w-fit"
+                    minSelections={0}
+                    maxSelections={10}
+                    showSelectedValues={(selectedValues) => {
+                      const areas = getAvailableAreas().filter(area => selectedValues.includes(area.AreaId.toString()));
+                      if (areas.length <= 2) {
+                        return `${areaLiteral}: ${areas.map(area => area.AreaName).join(', ')}`;
+                      } else {
+                        return `${areaLiteral}: ${areas.slice(0, 2).map(area => area.AreaName).join(', ')} +${areas.length - 2} more`;
+                      }
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <MultiSelect
+                    options={getAvailableOutlets().map(outlet => ({
+                      value: outlet.OutletId.toString(),
+                      label: `${outlet.OutletCode} - ${outlet.OutletName}`
+                    }))}
+                    selectedValues={selectedOutlets}
+                    onSelectionChange={(values) => setSelectedOutlets(values)}
+                    placeholder={`Select ${outletLiteral}`}
+                    className="w-fit"
+                    minSelections={0}
+                    maxSelections={10}
+                    showSelectedValues={(selectedValues) => {
+                      const outlets = getAvailableOutlets().filter(outlet => selectedValues.includes(outlet.OutletId.toString()));
+                      if (outlets.length <= 2) {
+                        return `${outletLiteral}: ${outlets.map(outlet => outlet.OutletName).join(', ')}`;
+                      } else {
+                        return `${outletLiteral}: ${outlets.slice(0, 2).map(outlet => outlet.OutletName).join(', ')} +${outlets.length - 2} more`;
+                      }
+                    }}
+                  />
+                </div>
+              </>)}
               {filtersLoading ? (
                 <div className="flex items-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
