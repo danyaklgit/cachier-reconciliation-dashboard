@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { ChevronLeft, ChevronRight, CreditCard, FilterIcon, X, Settings, GripVertical, RotateCcw, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CreditCard, FilterIcon, X, Settings, GripVertical, RotateCcw } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ReconciliationTable } from '@/components/ReconciliationTable';
@@ -230,19 +230,23 @@ function DashboardContent() {
     setIsHierarchyModalOpen(false);
   };
 
-  // Get available filter tags for a topic (excluding default ones and CUMULATIVE_FROM_DATE)
+  // Get available filter tags for a topic (including removed default ones, excluding CUMULATIVE_FROM_DATE)
   const getAvailableFilterTagsForTopic = (topicTag: string) => {
     const topic = topicsData.Topics.find(t => t.Tag === topicTag);
     if (!topic) return [];
 
-    const defaultTags = getDefaultHierarchyForTopic(topicTag);
     const currentHierarchy = tempTopicsHierarchy[topicTag] || [];
 
     return topic.AvailableFilterTags.filter(tag =>
-      !defaultTags.includes(tag) &&
       !currentHierarchy.includes(tag) &&
       tag !== 'CUMULATIVE_FROM_DATE'
     );
+  };
+
+  // Check if a filter is a default filter for a topic
+  const isDefaultFilter = (topicTag: string, filterTag: string) => {
+    const defaultTags = getDefaultHierarchyForTopic(topicTag);
+    return defaultTags.includes(filterTag);
   };
 
   // Add a filter tag to hierarchy
@@ -577,10 +581,10 @@ function DashboardContent() {
         ...Object.fromEntries(Object.entries(prev).filter(([key]) => key !== filterTag))
       }));
     } else {
-      setFilterState(prev => ({
-        ...prev,
-        [filterTag]: values
-      }));
+    setFilterState(prev => ({
+      ...prev,
+      [filterTag]: values
+    }));
     }
   };
   const removeFilter = (filterTag: string) => {
@@ -798,25 +802,25 @@ function DashboardContent() {
                   <span className="text-sm text-gray-600">Loading topics and filters...</span>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <MultiSelect
-                    options={topicsData.Topics.map(topic => ({
-                      value: topic.Tag,
-                      label: topic.Label
-                    }))}
-                    selectedValues={selectedTopics}
-                    onSelectionChange={(values) => {
-                      setSelectedTopics(values);
-                      if (values.length === 0) {
-                        setFilterState({});
-                      }
-                    }}
-                    placeholder="Select topics"
-                    className="w-fit"
-                    minSelections={1}
-                    showSelectedValues={(selectedValues) => { return `Topics: ${selectedValues.map(value => topicsData.Topics.find(topic => topic.Tag === value)?.Label).join(', ')}` }}
-                  />
-                </div>
+                             <div className="space-y-2">
+                 <MultiSelect
+                   options={topicsData.Topics.map(topic => ({
+                     value: topic.Tag,
+                     label: topic.Label
+                   }))}
+                   selectedValues={selectedTopics}
+                   onSelectionChange={(values) => {
+                     setSelectedTopics(values);
+                     if (values.length === 0) {
+                       setFilterState({});
+                     }
+                   }}
+                   placeholder="Select topics"
+                   className="w-fit"
+                   minSelections={1}
+                   showSelectedValues={(selectedValues) => { return `Topics: ${selectedValues.map(value => topicsData.Topics.find(topic => topic.Tag === value)?.Label).join(', ')}` }}
+                 />
+               </div>
               )}
             </div>
             {!filtersLoading && <Dialog open={isHierarchyModalOpen} onOpenChange={(open) => {
@@ -919,20 +923,30 @@ function DashboardContent() {
                                   <span className={`text-xs font-medium ${isDragged ? 'text-blue-600' : 'text-gray-600'}`}>
                                     Level <span className={`${isDragged ? 'text-blue-700' : 'text-slate-600'} font-normal`}>{index}</span>
                                   </span>
-                                  <span className={`text-sm flex-1 ${getMixedFontClass()} ${isDragged ? 'text-blue-700' : ''}`}>
+                                  <span className={`text-sm flex-1 
+                                                    ${getMixedFontClass()} 
+                                                    ${isDragged ? 'text-blue-700' : ''}
+                                                    ${isDefaultFilter(topicTag, filterTag) ? 'font-semibold text-slate-700' : 'text-slate-500'}`}>
+                                    {/* {isDefaultFilter(topicTag, filterTag) && (
+                                      <span className="text-xs text-blue-600 mr-1">🔄</span>
+                                    )} */}
                                     {getFilterLabel(filterTag)}
+                                    {/* {isDefaultFilter(topicTag, filterTag) && (
+                                      <span className="text-xs text-gray-500 ml-1">(Default)</span>
+                                    )} */}
                                   </span>
-                                  {/* Remove button for custom filters */}
-                                  {!getDefaultHierarchyForTopic(topicTag).includes(filterTag) && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => removeFilterFromHierarchy(topicTag, filterTag)}
-                                      className="text-xs h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                                    >
-                                      <X className="w-3 h-3" />
-                                    </Button>
-                                  )}
+                                  {/* Remove button for all filters */}
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeFilterFromHierarchy(topicTag, filterTag)}
+                                    // className="text-xs h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                                    className="text-xs px-2 text-red-500 hover:text-red-700 cursor-pointer"
+                                    title={`Remove ${getFilterLabel(filterTag)}`}
+                                  >
+                                    {/* <X className="w-3 h-3" /> */}
+                                    Remove
+                                  </Button>
                                 </div>
                               </div>
                             );
@@ -969,9 +983,13 @@ function DashboardContent() {
                                 }}
                                 defaultValue=""
                               >
-                                <option value="" disabled>Select a level to add...</option>
+                                 <option value="" disabled>Select a filter to add...</option>
                                 {availableFilters.map(filterTag => (
                                   <option key={filterTag} value={filterTag}>
+                                    {/* {isDefaultFilter(topicTag, filterTag) 
+                                      ? `🔄 ${getFilterLabel(filterTag)} (Default)` 
+                                      : getFilterLabel(filterTag)
+                                    } */}
                                     {getFilterLabel(filterTag)}
                                   </option>
                                 ))}
@@ -1070,64 +1088,64 @@ function DashboardContent() {
             </Card>
           ) : (
             <Card className={
-              `mb-4 p-4 px-1 gap-1 group ${Object.keys(filterState).length > 0 ? 'bg-white' : 'bg-white/50'}`
-            }>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-bold text-gray-900">Custom Filters</CardTitle>
+          `mb-4 p-4 px-1 gap-1 group ${Object.keys(filterState).length > 0 ? 'bg-white' : 'bg-white/50'}`
+        }>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-bold text-gray-900">Custom Filters</CardTitle>
                   <div className="flex items-center gap-2">
 
-                    {Object.keys(filterState).some(key => filterState[key]?.length > 0) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setFilterState({})}
-                        className="text-xs"
-                      >
-                        Clear All Filters
-                      </Button>
-                    )}
+              {Object.keys(filterState).some(key => filterState[key]?.length > 0) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFilterState({})}
+                  className="text-xs"
+                >
+                  Clear All Filters
+                </Button>
+              )}
                   </div>
+            </div>
+          </CardHeader>
+          <CardContent className={`flex flex-col ${Object.keys(filterState).length > 0 ? 'gap-4' : 'gap-1'}`}>
+
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+
+
+              {/* Dynamic Filters */}
+              {availableFilters.map((filter) => (
+                <div key={filter.Tag} className="space-y-2">
+                  <Label className="flex text-sm items-end gap-2">
+                    <span className="text-sm pt-1">{filter.Label}</span>
+                    <div className="text-xs flex items-end gap-2 font-medium text-primary opacity-50 group-hover:opacity-100 duration-300 transition-all">{resolveAppliesToTopic(filter.Tag)}</div>
+                  </Label>
+                  <MultiSelect
+                    options={filter.Values?.map(value => ({
+                      value: value.Code,
+                      label: value.Label
+                    })) || []}
+                    selectedValues={filterState[filter.Tag] || []}
+                    onSelectionChange={(values) => handleFilterChange(filter.Tag, values)}
+                    placeholder={`Select ${filter.Label}`}
+                    className="w-full"
+                  />
                 </div>
-              </CardHeader>
-              <CardContent className={`flex flex-col ${Object.keys(filterState).length > 0 ? 'gap-4' : 'gap-1'}`}>
-
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-
-
-                  {/* Dynamic Filters */}
-                  {availableFilters.map((filter) => (
-                    <div key={filter.Tag} className="space-y-2">
-                      <Label className="flex text-sm items-end gap-2">
-                        <span className="text-sm pt-1">{filter.Label}</span>
-                        <div className="text-xs flex items-end gap-2 font-medium text-primary opacity-50 group-hover:opacity-100 duration-300 transition-all">{resolveAppliesToTopic(filter.Tag)}</div>
-                      </Label>
-                      <MultiSelect
-                        options={filter.Values?.map(value => ({
-                          value: value.Code,
-                          label: value.Label
-                        })) || []}
-                        selectedValues={filterState[filter.Tag] || []}
-                        onSelectionChange={(values) => handleFilterChange(filter.Tag, values)}
-                        placeholder={`Select ${filter.Label}`}
-                        className="w-full"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {/* selected filters */}
-                  {Object.keys(filterState).map((key) => {
-                    const filter = filtersData.Filters.find(f => f.Tag === key);
-                    return (
-                      <Badge key={key} className="bg-gray-100 rounded-md p-1 px-2 group">
-                        <Label>{filter?.Label}</Label>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {/* selected filters */}
+              {Object.keys(filterState).map((key) => {
+                const filter = filtersData.Filters.find(f => f.Tag === key);
+                return (
+                  <Badge key={key} className="bg-gray-100 rounded-md p-1 px-2 group">
+                    <Label>{filter?.Label}</Label>
                         <p className={getMixedFontClass()}>
                           {(() => {
                             const selectedLabels = filterState[key].map(code => {
-                              const value = filter?.Values?.find(v => v.Code === code);
-                              return value?.Label || code;
+                      const value = filter?.Values?.find(v => v.Code === code);
+                      return value?.Label || code;
                             });
 
                             if (selectedLabels.length <= 3) {
@@ -1142,14 +1160,14 @@ function DashboardContent() {
                             }
                           })()}
                         </p>
-                        <Button variant="ghost" size="icon" onClick={() => removeFilter(key)} className="ml-2 group-hover:bg-gray-200 hover:text-red-700 cursor-pointer">
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </Badge>
-                    );
-                  })}
-                </div>
-              </CardContent>
+                    <Button variant="ghost" size="icon" onClick={() => removeFilter(key)} className="ml-2 group-hover:bg-gray-200 hover:text-red-700 cursor-pointer">
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </Badge>
+                );
+              })}
+            </div>
+          </CardContent>
             </Card>
           )
         )}
