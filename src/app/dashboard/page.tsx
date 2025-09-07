@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { ChevronLeft, ChevronRight, CreditCard, FilterIcon, X, Settings, GripVertical, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CreditCard, FilterIcon, X, Settings, GripVertical, RotateCcw, EyeIcon, InfoIcon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ReconciliationTable } from '@/components/ReconciliationTable';
@@ -700,36 +700,51 @@ function DashboardContent() {
   }
 
   const resolveAppliesToTopic = (filterTag: string) => {
-    return topicsData.Topics.filter(topic => topic.AvailableFilterTags.includes(filterTag))?.map(topic => {
-      return <div key={topic.Tag} className="text-xs text-primary opacity-60 font-medium">
-        {/* {topic.Label} */}
-        {topic.Tag === 'POS_CARDS' && (
-          <Tooltip>
-            <TooltipTrigger>
-              <CreditCard className="w-4 h-4" />
-            </TooltipTrigger>
-            <TooltipContent>This filter applies to {topic.Label}</TooltipContent>
-          </Tooltip>
+    const appliesToTopics = topicsData.Topics.filter(topic => topic.AvailableFilterTags.includes(filterTag))
+    return (<div key={filterTag} className="text-xs text-primary opacity-60 font-medium">
+      <Tooltip>
+        <TooltipTrigger>
+          <InfoIcon className="w-4 h-4" />
+        </TooltipTrigger>
+        <TooltipContent className='text-xs bg-white p-3 py-2'>This filter applies to
+          <span className='font-medium px-1 flex flex-col gap-1'>{
+            appliesToTopics?.map(topic => topic.Label).map(label => <span key={label}>{label}</span>)
+          }
+          </span>
+          </TooltipContent>
+      </Tooltip>
 
-        )}
-        {topic.Tag === 'CASH' && (
-          <Tooltip>
-            <TooltipTrigger>
-              <span className="icon-saudi_riyal text-sm w-4 h-4">&#xea;</span>
-            </TooltipTrigger>
-            <TooltipContent>This filter applies to {topic.Label}</TooltipContent>
-          </Tooltip>
-        )}
-        {topic.Tag !== 'CASH' && topic.Tag !== 'POS_CARDS' && (
-          <Tooltip>
-            <TooltipTrigger>
-              <FilterIcon className="w-4 h-4" />
-            </TooltipTrigger>
-            <TooltipContent>This filter applies to {topic.Label}</TooltipContent>
-          </Tooltip>
-        )}
-      </div>;
-    });
+    </div>)
+    // return topicsData.Topics.filter(topic => topic.AvailableFilterTags.includes(filterTag))?.map(topic => {
+    //   return <div key={topic.Tag} className="text-xs text-primary opacity-60 font-medium">
+    //     {/* {topic.Label} */}
+    //     {topic.Tag === 'POS_CARDS' && (
+    //       <Tooltip>
+    //         <TooltipTrigger>
+    //           <CreditCard className="w-4 h-4" />
+    //         </TooltipTrigger>
+    //         <TooltipContent>This filter applies to {topic.Label}</TooltipContent>
+    //       </Tooltip>
+
+    //     )}
+    //     {topic.Tag === 'CASH' && (
+    //       <Tooltip>
+    //         <TooltipTrigger>
+    //           <span className="icon-saudi_riyal text-sm w-4 h-4">&#xea;</span>
+    //         </TooltipTrigger>
+    //         <TooltipContent>This filter applies to {topic.Label}</TooltipContent>
+    //       </Tooltip>
+    //     )}
+    //     {topic.Tag !== 'CASH' && topic.Tag !== 'POS_CARDS' && (
+    //       <Tooltip>
+    //         <TooltipTrigger>
+    //           <InfoIcon className="w-4 h-4" />
+    //         </TooltipTrigger>
+    //         <TooltipContent>This filter applies to {topic.Label}</TooltipContent>
+    //       </Tooltip>
+    //     )}
+    //   </div>;
+    // });
   };
 
   const areaLiteral = "DC"
