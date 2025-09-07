@@ -18,6 +18,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { toast } from 'react-hot-toast';
 
 interface ReconciliationTableProps {
   data: DataNode[];
@@ -26,7 +27,7 @@ interface ReconciliationTableProps {
 
 const formatNumber = (num: number): string => {
   if (num === 0) return '-';
-  return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 const getRowStyle = (nodeTag: string, depth: number) => {
@@ -407,6 +408,31 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
         },
       ],
     },
+    {
+      id: 'actions',
+      header: '',
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center justify-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                // TODO: Implement view action
+                toast.success('View action clicked for row:' + row.original.Id, {
+                  position: 'bottom-right',
+                });
+                // console.log('View action clicked for row:', row.original);
+              }}
+              className="text-xs text-primary px-3 py-1 cursor-pointer"
+            >
+              View 
+            </Button>
+          </div>
+        );
+      },
+      width: 80,
+    },
   ], [expanded, handleRowExpansion, isExpanding]);
 
   const filteredData = useMemo(() => {
@@ -448,6 +474,7 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
   // console.log('All rows:', table.getRowModel().rows);
 
   const resolveHeaderClassName = (headerGroupId: string) => {
+    console.log('headerGroupId:', headerGroupId);
     switch (headerGroupId) {
       case '1_recordsVerification_2_recorded_recorded':
       case '1_recordsVerification_2_verified_verified':
@@ -474,6 +501,9 @@ export function ReconciliationTable({ data, filterState }: ReconciliationTablePr
       case 'settlementExceptions':
       case 'settlementCumAwaiting':
       case 'settlementCumExceptions':
+      case 'actions':
+      case '1_actions_2_actions_actions':
+      case '2_actions_actions':
         return 'bg-blue-100';
       case 'topic':
         return 'bg-primary opacity-80';

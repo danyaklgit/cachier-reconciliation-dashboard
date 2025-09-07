@@ -22,6 +22,7 @@ function DashboardContent() {
   const [selectedTopics, setSelectedTopics] = useState<string[]>(['POSCARDS']);
   const [availableFilters, setAvailableFilters] = useState<Filter[]>([]);
   const [filterState, setFilterState] = useState<FilterState>({});
+  const [appliedFilterState, setAppliedFilterState] = useState<FilterState>({});
   const [loading, setLoading] = useState(false);
   const [filtersLoading, setFiltersLoading] = useState(false);
   const [filtersData, setFiltersData] = useState<{ Filters: Filter[] }>({ Filters: [] });
@@ -56,6 +57,10 @@ function DashboardContent() {
   const [selectedOutlets, setSelectedOutlets] = useState<string[]>([]);
   const [selectedTenant, setSelectedTenant] = useState<string>('');
   const [selectedBusinessDay, setSelectedBusinessDay] = useState<string>(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return today;
+  });
+  const [debouncedBusinessDay, setDebouncedBusinessDay] = useState<string>(() => {
     const today = new Date().toISOString().split('T')[0];
     return today;
   });
@@ -173,13 +178,13 @@ function DashboardContent() {
   const getAvailableOutlets = useCallback(() => {
     const areas = getAvailableAreas();
     // if (selectedAreas.length === 1) {
-      const selectedAreaObjs = areas.filter(area => selectedAreas.includes(area.AreaId.toString()));
-      const allOutlets = selectedAreaObjs.flatMap(area => area.Outlets);
-      // Remove duplicates based on OutletId
-      const uniqueOutlets = allOutlets.filter((outlet, index, self) =>
-        index === self.findIndex(o => o.OutletId === outlet.OutletId)
-      );
-      return uniqueOutlets;
+    const selectedAreaObjs = areas.filter(area => selectedAreas.includes(area.AreaId.toString()));
+    const allOutlets = selectedAreaObjs.flatMap(area => area.Outlets);
+    // Remove duplicates based on OutletId
+    const uniqueOutlets = allOutlets.filter((outlet, index, self) =>
+      index === self.findIndex(o => o.OutletId === outlet.OutletId)
+    );
+    return uniqueOutlets;
     // } 
     // else {
     //   return areas.flatMap(area => area.Outlets);
@@ -293,9 +298,15 @@ function DashboardContent() {
         if (parsedState.selectedArea && !parsedState.selectedAreas) setSelectedAreas([parsedState.selectedArea]);
         if (parsedState.selectedOutlet && !parsedState.selectedOutlets) setSelectedOutlets([parsedState.selectedOutlet]);
         if (parsedState.selectedTenant) setSelectedTenant(parsedState.selectedTenant);
-        if (parsedState.selectedBusinessDay) setSelectedBusinessDay(parsedState.selectedBusinessDay);
+        if (parsedState.selectedBusinessDay) {
+          setSelectedBusinessDay(parsedState.selectedBusinessDay);
+          setDebouncedBusinessDay(parsedState.selectedBusinessDay);
+        }
         if (parsedState.selectedTopics) setSelectedTopics(parsedState.selectedTopics);
-        if (parsedState.filterState) setFilterState(parsedState.filterState);
+        if (parsedState.filterState) {
+          setFilterState(parsedState.filterState);
+          setAppliedFilterState(parsedState.filterState);
+        }
       } catch (error) {
         console.error('Error loading saved dashboard state:', error);
       }
@@ -502,8 +513,8 @@ function DashboardContent() {
 
       // Build filter parameters dynamically
       const filterParams: { [key: string]: string } = {};
-      Object.keys(filterState).forEach((filterTag, index) => {
-        const selectedValues = filterState[filterTag];
+      Object.keys(appliedFilterState).forEach((filterTag, index) => {
+        const selectedValues = appliedFilterState[filterTag];
         if (selectedValues && selectedValues.length > 0) {
           filterParams[`Filter${index + 1}`] = selectedValues.join(',');
         }
@@ -526,11 +537,11 @@ function DashboardContent() {
         TenantCode: getTenantCode(),
         AreaIds: selectedAreas,
         OutletIds: selectedOutlets,
-        BusinessDay: selectedBusinessDay,
+        BusinessDay: debouncedBusinessDay,
         Topics: selectedTopics,
-        Filters: Object.keys(filterState).map(filterTag => ({
+        Filters: Object.keys(appliedFilterState).map(filterTag => ({
           Tag: filterTag,
-          Values: filterState[filterTag] || []
+          Values: appliedFilterState[filterTag] || []
         })).filter(filter => filter.Values.length > 0),
         DashboardHierarchy: dashboardHierarchy,
         LanguageCode: 'en'
@@ -538,41 +549,55 @@ function DashboardContent() {
 
 
       console.log('Sending request with RequestJson:', requestJson);
+      if (requestJson.TenantCode) {
 
-      const response = await fetch('/api/test-dashboard', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        // body: JSON.stringify({  RequestJson:requestJson })
-        body: JSON.stringify({
-          RequestJson: requestJson
-        })
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to load dashboard data');
+        const response = await fetch('/api/test-dashboard', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // body: JSON.stringify({  RequestJson:requestJson })
+          body: JSON.stringify({
+            RequestJson: requestJson
+          })
+        });
+        if (!response.ok) {
+          setDashboardData(null);
+          throw new Error('Failed to load dashboard data');
+        }
+
+        const data = await response.json();
+        setDashboardData(data);
       }
 
-      const data = await response.json();
-      setDashboardData(data);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
       setDashboardData(null);
     } finally {
       setLoading(false);
     }
-  }, [selectedTopics, topicsHierarchy, selectedBusinessDay, selectedAreas, selectedOutlets, filterState, getTenantCode]);
+  }, [selectedTopics, topicsHierarchy, debouncedBusinessDay, selectedAreas, selectedOutlets, appliedFilterState, getTenantCode]);
+
+  // Debounce business day changes with 2-second delay that resets on each change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedBusinessDay(selectedBusinessDay);
+    }, 2000); // 2-second delay
+
+    return () => clearTimeout(timer);
+  }, [selectedBusinessDay]);
 
   // Load data when selections change (only after initial load is complete)
+  // Note: Business day changes are handled by debounce, not here
   useEffect(() => {
-    if (isInitialLoadComplete && selectedAreas.length > 0 && selectedOutlets.length > 0 && selectedTenant && selectedBusinessDay && selectedTopics.length > 0) {
+    if (isInitialLoadComplete && selectedAreas.length > 0 && selectedOutlets.length > 0 && selectedTenant && debouncedBusinessDay && selectedTopics.length > 0) {
       loadDashboardData();
     } else if (isInitialLoadComplete) {
       setDashboardData(null);
       setLoading(false); // Stop loading when selections are incomplete
     }
-  }, [isInitialLoadComplete, selectedAreas, selectedOutlets, selectedTenant, selectedBusinessDay, selectedTopics, filterState, topicsHierarchy, loadDashboardData]);
+  }, [isInitialLoadComplete, selectedAreas, selectedOutlets, selectedTenant, debouncedBusinessDay, selectedTopics, appliedFilterState, topicsHierarchy, loadDashboardData]);
 
   const handleFilterChange = (filterTag: string, values: string[]) => {
     // check if values is empty remove the filter key from the object
@@ -581,10 +606,10 @@ function DashboardContent() {
         ...Object.fromEntries(Object.entries(prev).filter(([key]) => key !== filterTag))
       }));
     } else {
-    setFilterState(prev => ({
-      ...prev,
-      [filterTag]: values
-    }));
+      setFilterState(prev => ({
+        ...prev,
+        [filterTag]: values
+      }));
     }
   };
   const removeFilter = (filterTag: string) => {
@@ -617,6 +642,40 @@ function DashboardContent() {
 
     const newDateString = newDate.toISOString().split('T')[0];
     setSelectedBusinessDay(newDateString);
+    setDebouncedBusinessDay(newDateString);
+  };
+
+
+  // Check if there are unapplied filter changes
+  const hasUnappliedChanges = () => {
+    const currentKeys = Object.keys(filterState);
+    const appliedKeys = Object.keys(appliedFilterState);
+    
+    // Different number of filters
+    if (currentKeys.length !== appliedKeys.length) return true;
+    
+    // Check if any filter values are different
+    for (const key of currentKeys) {
+      const currentValues = filterState[key] || [];
+      const appliedValues = appliedFilterState[key] || [];
+      
+      if (currentValues.length !== appliedValues.length) return true;
+      
+      // Check if values are different
+      const currentSorted = [...currentValues].sort();
+      const appliedSorted = [...appliedValues].sort();
+      
+      for (let i = 0; i < currentSorted.length; i++) {
+        if (currentSorted[i] !== appliedSorted[i]) return true;
+      }
+    }
+    
+    return false;
+  };
+
+  const handleApplyFilters = () => {
+    // Apply the current filter selections - the useEffect will handle the API call
+    setAppliedFilterState(filterState);
   };
 
   if (loading) {
@@ -802,25 +861,25 @@ function DashboardContent() {
                   <span className="text-sm text-gray-600">Loading topics and filters...</span>
                 </div>
               ) : (
-                             <div className="space-y-2">
-                 <MultiSelect
-                   options={topicsData.Topics.map(topic => ({
-                     value: topic.Tag,
-                     label: topic.Label
-                   }))}
-                   selectedValues={selectedTopics}
-                   onSelectionChange={(values) => {
-                     setSelectedTopics(values);
-                     if (values.length === 0) {
-                       setFilterState({});
-                     }
-                   }}
-                   placeholder="Select topics"
-                   className="w-fit"
-                   minSelections={1}
-                   showSelectedValues={(selectedValues) => { return `Topics: ${selectedValues.map(value => topicsData.Topics.find(topic => topic.Tag === value)?.Label).join(', ')}` }}
-                 />
-               </div>
+                <div className="space-y-2">
+                  <MultiSelect
+                    options={topicsData.Topics.map(topic => ({
+                      value: topic.Tag,
+                      label: topic.Label
+                    }))}
+                    selectedValues={selectedTopics}
+                    onSelectionChange={(values) => {
+                      setSelectedTopics(values);
+                      if (values.length === 0) {
+                        setFilterState({});
+                      }
+                    }}
+                    placeholder="Select topics"
+                    className="w-fit"
+                    minSelections={1}
+                    showSelectedValues={(selectedValues) => { return `Topics: ${selectedValues.map(value => topicsData.Topics.find(topic => topic.Tag === value)?.Label).join(', ')}` }}
+                  />
+                </div>
               )}
             </div>
             {!filtersLoading && <Dialog open={isHierarchyModalOpen} onOpenChange={(open) => {
@@ -983,7 +1042,7 @@ function DashboardContent() {
                                 }}
                                 defaultValue=""
                               >
-                                 <option value="" disabled>Select a filter to add...</option>
+                                <option value="" disabled>Select a filter to add...</option>
                                 {availableFilters.map(filterTag => (
                                   <option key={filterTag} value={filterTag}>
                                     {/* {isDefaultFilter(topicTag, filterTag) 
@@ -1088,64 +1147,64 @@ function DashboardContent() {
             </Card>
           ) : (
             <Card className={
-          `mb-4 p-4 px-1 gap-1 group ${Object.keys(filterState).length > 0 ? 'bg-white' : 'bg-white/50'}`
-        }>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-bold text-gray-900">Custom Filters</CardTitle>
+              `mb-4 p-4 px-1 gap-1 group ${Object.keys(filterState).length > 0 ? 'bg-white' : 'bg-white/50'}`
+            }>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-bold text-gray-900">Custom Filters</CardTitle>
                   <div className="flex items-center gap-2">
 
-              {Object.keys(filterState).some(key => filterState[key]?.length > 0) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setFilterState({})}
-                  className="text-xs"
-                >
-                  Clear All Filters
-                </Button>
-              )}
+                    {Object.keys(filterState).some(key => filterState[key]?.length > 0) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setFilterState({})}
+                        className="text-xs"
+                      >
+                        Clear All Filters
+                      </Button>
+                    )}
                   </div>
-            </div>
-          </CardHeader>
-          <CardContent className={`flex flex-col ${Object.keys(filterState).length > 0 ? 'gap-4' : 'gap-1'}`}>
-
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-
-
-              {/* Dynamic Filters */}
-              {availableFilters.map((filter) => (
-                <div key={filter.Tag} className="space-y-2">
-                  <Label className="flex text-sm items-end gap-2">
-                    <span className="text-sm pt-1">{filter.Label}</span>
-                    <div className="text-xs flex items-end gap-2 font-medium text-primary opacity-50 group-hover:opacity-100 duration-300 transition-all">{resolveAppliesToTopic(filter.Tag)}</div>
-                  </Label>
-                  <MultiSelect
-                    options={filter.Values?.map(value => ({
-                      value: value.Code,
-                      label: value.Label
-                    })) || []}
-                    selectedValues={filterState[filter.Tag] || []}
-                    onSelectionChange={(values) => handleFilterChange(filter.Tag, values)}
-                    placeholder={`Select ${filter.Label}`}
-                    className="w-full"
-                  />
                 </div>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {/* selected filters */}
-              {Object.keys(filterState).map((key) => {
-                const filter = filtersData.Filters.find(f => f.Tag === key);
-                return (
-                  <Badge key={key} className="bg-gray-100 rounded-md p-1 px-2 group">
-                    <Label>{filter?.Label}</Label>
+              </CardHeader>
+              <CardContent className={`flex flex-col ${Object.keys(filterState).length > 0 ? 'gap-4' : 'gap-1'}`}>
+
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+
+
+                  {/* Dynamic Filters */}
+                  {availableFilters.map((filter) => (
+                    <div key={filter.Tag} className="space-y-2">
+                      <Label className="flex text-sm items-end gap-2">
+                        <span className="text-sm pt-1">{filter.Label}</span>
+                        <div className="text-xs flex items-end gap-2 font-medium text-primary opacity-50 group-hover:opacity-100 duration-300 transition-all">{resolveAppliesToTopic(filter.Tag)}</div>
+                      </Label>
+                      <MultiSelect
+                        options={filter.Values?.map(value => ({
+                          value: value.Code,
+                          label: value.Label
+                        })) || []}
+                        selectedValues={filterState[filter.Tag] || []}
+                        onSelectionChange={(values) => handleFilterChange(filter.Tag, values)}
+                        placeholder={`Select ${filter.Label}`}
+                        className="w-full"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {/* selected filters */}
+                  {Object.keys(filterState).map((key) => {
+                    const filter = filtersData.Filters.find(f => f.Tag === key);
+                    return (
+                      <Badge key={key} className="bg-gray-100 rounded-md p-1 px-2 group">
+                        <Label>{filter?.Label}</Label>
                         <p className={getMixedFontClass()}>
                           {(() => {
                             const selectedLabels = filterState[key].map(code => {
-                      const value = filter?.Values?.find(v => v.Code === code);
-                      return value?.Label || code;
+                              const value = filter?.Values?.find(v => v.Code === code);
+                              return value?.Label || code;
                             });
 
                             if (selectedLabels.length <= 3) {
@@ -1160,14 +1219,28 @@ function DashboardContent() {
                             }
                           })()}
                         </p>
-                    <Button variant="ghost" size="icon" onClick={() => removeFilter(key)} className="ml-2 group-hover:bg-gray-200 hover:text-red-700 cursor-pointer">
-                      <X className="w-4 h-4" />
+                        <Button variant="ghost" size="icon" onClick={() => removeFilter(key)} className="ml-2 group-hover:bg-gray-200 hover:text-red-700 cursor-pointer">
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </Badge>
+                    );
+                  })}
+                </div>
+
+                {/* Filter Button - Only show when there are unapplied changes */}
+                {hasUnappliedChanges() && (
+                  <div className="flex justify-center mt-4">
+                    <Button
+                      onClick={handleApplyFilters}
+                      className="bg-primary text-white px-6 py-2 animate-pulse hover:font-semibold cursor-pointer"
+                      disabled={loading}
+                      variant="outline"
+                    >
+                      {loading ? 'Loading...' : 'Apply Filters'}
                     </Button>
-                  </Badge>
-                );
-              })}
-            </div>
-          </CardContent>
+                  </div>
+                )}
+              </CardContent>
             </Card>
           )
         )}
