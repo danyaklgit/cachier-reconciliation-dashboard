@@ -18,7 +18,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { toast } from 'react-hot-toast';
+// import { toast } from 'react-hot-toast';
 
 interface ReconciliationTableProps {
   data: DataNode[];
@@ -26,10 +26,25 @@ interface ReconciliationTableProps {
   viewTransaction: (row: DataNode) => void;
 }
 
-const formatNumber = (num: number): string => {
-  if (num === 0) return '-';
-  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// Component to format decimal numbers with superscript decimal part
+const DecimalNumber = ({ num }: { num: number }) => {
+  if (num === 0) return <span>-</span>;
+  
+  const formatted = num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const [integerPart, decimalPart] = formatted.split('.');
+  
+  return (
+    <span className='text-sm'>
+      {integerPart}
+      <sup className="text-[10px] top-[-3px] font-normal">.{decimalPart}</sup>
+    </span>
+  );
 };
+
+// const formatNumber = (num: number): string => {
+//   if (num === 0) return '-';
+//   return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// };
 
 const getRowStyle = (nodeTag: string, depth: number) => {
   // const baseStyle = 'border-b border-gray-50';
@@ -229,7 +244,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
             const value = getValue() as number;
             return (
               <span className={`text-right block ${getCellStyle(value, 'recorded')}`}>
-                {formatNumber(getValue() as number)}
+                <DecimalNumber num={value} />
               </span>
             );
           },
@@ -242,7 +257,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
             const value = getValue() as number;
             return (
               <span className={`text-right block ${getCellStyle(value, 'verified')}`}>
-                {formatNumber(value)}
+                <DecimalNumber num={value} />
               </span>
             );
           },
@@ -259,7 +274,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
                 const value = getValue() as number;
                 return (
                   <span className={`text-right block ${getCellStyle(value, 'outstanding')}`}>
-                    {formatNumber(value)}
+                    <DecimalNumber num={value} />
                   </span>
                 );
               },
@@ -272,7 +287,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
                 const value = getValue() as number;
                 return (
                   <span className={`text-right block ${getCellStyle(value, 'exceptions')}`}>
-                    {formatNumber(value)}
+                    <DecimalNumber num={value} />
                   </span>
                 );
               },
@@ -291,7 +306,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
                 const value = getValue() as number;
                 return (
                   <span className={`text-right block ${getCellStyle(value, 'outstanding')}`}>
-                    {formatNumber(value)}
+                    <DecimalNumber num={value} />
                   </span>
                 );
               },
@@ -304,7 +319,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
                 const value = getValue() as number;
                 return (
                   <span className={`text-right block ${getCellStyle(value, 'exceptions')}`}>
-                    {formatNumber(value)}
+                    <DecimalNumber num={value} />
                   </span>
                 );
               },
@@ -325,7 +340,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
             const value = getValue() as number;
             return (
               <span className={`text-right block ${getCellStyle(value, 'claimed')}`}>
-                {formatNumber(value)}
+                <DecimalNumber num={value} />
               </span>
             );
           },
@@ -338,7 +353,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
             const value = getValue() as number;
             return (
               <span className={`text-right block ${getCellStyle(value, 'settled')}`}>
-                {formatNumber(value)}
+                <DecimalNumber num={value} />
               </span>
             );
           },
@@ -355,7 +370,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
                 const value = getValue() as number;
                 return (
                   <span className={`text-right block ${getCellStyle(value, 'awaitingSettlement')}`}>
-                    {formatNumber(value)}
+                    <DecimalNumber num={value} />
                   </span>
                 );
               },
@@ -368,7 +383,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
                 const value = getValue() as number;
                 return (
                   <span className={`text-right block ${getCellStyle(value, 'exceptions')}`}>
-                    {formatNumber(value)}
+                    <DecimalNumber num={value} />
                   </span>
                 );
               },
@@ -387,7 +402,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
                 const value = getValue() as number;
                 return (
                   <span className={`text-right block ${getCellStyle(value, 'awaitingSettlement')}`}>
-                    {formatNumber(value)}
+                    <DecimalNumber num={value} />
                   </span>
                 );
               },
@@ -400,7 +415,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
                 const value = getValue() as number;
                 return (
                   <span className={`text-right block ${getCellStyle(value, 'exceptions')}`}>
-                    {formatNumber(value)}
+                    <DecimalNumber num={value} />
                   </span>
                 );
               },
@@ -433,7 +448,7 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
       },
       width: 80,
     },
-  ], [expanded, handleRowExpansion, isExpanding]);
+  ], [expanded, handleRowExpansion, isExpanding, viewTransaction]);
 
   const filteredData = useMemo(() => {
     let filtered = data;

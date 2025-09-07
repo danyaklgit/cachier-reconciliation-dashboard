@@ -1,0 +1,129 @@
+Category,TagOrCode,LanguageCode,Name,Description
+Acquirer,RJHISARI,en,Alrajhi Bank,
+Acquirer,RJHISARI,ar,مصرف الراجحي,
+PaymentMethod,MADA,en,Mada,
+PaymentMethod,MADA,ar,مدى,
+PaymentMethod,VISA,en,Visa,
+PaymentMethod,VISA,ar,فيزا,
+PaymentMethod,MASTERCARD,en,Mastercard,
+PaymentMethod,MASTERCARD,ar,ماستركارد,
+PaymentMethod,AMEX,en,American Express,
+PaymentMethod,AMEX,ar,أمريكان اكسبريس,
+PaymentMethod,DISCOVER,en,Discover,
+PaymentMethod,DISCOVER,ar,ديسكوفر,
+PaymentMethod,GCCNET,en,GCC Net,
+PaymentMethod,GCCNET,ar,GCC شبكة,
+PaymentMethod,MAESTRO,en,Maestro,
+PaymentMethod,MAESTRO,ar,مايسترو,
+PaymentMethod,UNIONPAY,en,UnionPay,
+PaymentMethod,UNIONPAY,ar,يونيون باي,
+PaymentMethod,UPI,en,UPI,
+PaymentMethod,UPI,ar,UPI,
+Mismatch,INTRANSIT_MISSING_IN_SOURCE,en,In-Transit Missing in Source,
+Mismatch,INTRANSIT_MISSING_IN_SOURCE,ar,قيد الانتظار - مفقود من الطرف الاول,
+Mismatch,INTRANSIT_MISSING_IN_DESTINATION,en,In-Transit Missing in Destination,
+Mismatch,INTRANSIT_MISSING_IN_DESTINATION,ar,قيد الانتظار مفقود من الطرف الثاني ,
+Mismatch,MISSING_IN_SOURCE,en,Missing in Source,
+Mismatch,MISSING_IN_SOURCE,ar,مفقود من الطرف الاول,
+Mismatch,MISSING_IN_DESTINATION,en,Missing in Destination,
+Mismatch,MISSING_IN_DESTINATION,ar,مفقود  من الطرف الثاني,
+Mismatch,MISMATCH_AMOUNT,en,Amount Mismatch,
+Mismatch,MISMATCH_AMOUNT,ar,المبلغ غير مطابق,
+Mismatch,MISMATCH_PAYMENT_METHOD,en,Payment Method Mismatch,
+Mismatch,MISMATCH_PAYMENT_METHOD,ar,طريقة الدفع غير مطابقة,
+Mismatch,MISMATCH_BANK_CHARGES,en,Bank Charges Mismatch,
+Mismatch,MISMATCH_BANK_CHARGES,ar,مبلغ الرسوم غير مطابق,
+Status,PENDING,en,Pending,
+Status,PENDING,ar,معلق,
+Status,INTRANSIT,en,In Transit,
+Status,INTRANSIT,ar,قيد النتظار,
+Status,RECONCILED,en,Reconciled,
+Status,RECONCILED,ar,مطابِق,
+Status,CLEARED,en,Cleared,
+Status,CLEARED,ar,تمت مطابقته,
+Status,EXCEPTION,en,Exception,
+Status,EXCEPTION,ar,خطأ,
+BlendedSettlementStatus,SOURCE_RECORD_MISSING_PENDING_SETTLEMENT,en,Missing-Not Settled,"No source data, waiting for settlement."
+BlendedSettlementStatus,SOURCE_RECORD_MISSING_PENDING_SETTLEMENT,ar,مفقود - غير مسدد,".لا توجد بيانات مصدر، في انتظار التسديد"
+BlendedSettlementStatus,SOURCE_RECORD_MISSING_SETTLED,en,Missing-Settled,"No source data, but transaction was settled."
+BlendedSettlementStatus,SOURCE_RECORD_MISSING_SETTLED,ar,مفقود مسدد,".لا توجد بيانات مصدر، ولكن تم تسديد المعاملة"
+BlendedSettlementStatus,SOURCE_RECORD_MISSING_SETTLED_EXCESS,en,Missing-Overpaid,"No source data, but transaction was settled with extra amount."
+BlendedSettlementStatus,SOURCE_RECORD_MISSING_SETTLED_EXCESS,ar,مفقود - مسدد زيادة,".لا توجد بيانات مصدر، ولكن تم تسديد المعاملة بمبلغ زائد"
+BlendedSettlementStatus,SOURCE_RECORD_MISSING_SETTLED_SHORT,en,Missing-Underpaid,"No source data, but transaction was settled with missing amount."
+BlendedSettlementStatus,SOURCE_RECORD_MISSING_SETTLED_SHORT,ar,مفقود - مسدد ناقص,".لا توجد بيانات مصدر، ولكن تم تسديد المعاملة بمبلغ ناقص"
+BlendedSettlementStatus,SOURCE_RECORD_MISSING_SETTLED_EXCEPTION,en,Missing-Error,No source data found and an error occurred in settlement.
+BlendedSettlementStatus,SOURCE_RECORD_MISSING_SETTLED_EXCEPTION,ar,مفقود - خطأ في التسديد,".لم يتم العثور على بيانات مصدر، وحدث خطأ في التسديد"
+BlendedSettlementStatus,PENDING_SETTLEMENT,en,Pending,Waiting for settlement.
+BlendedSettlementStatus,PENDING_SETTLEMENT,ar,معلق,.في انتظار التسديد
+BlendedSettlementStatus,UNVERIFIED_PENDING_SETTLEMENT,en,Pending-Unverified,"Not verified, still pending settlement."
+BlendedSettlementStatus,UNVERIFIED_PENDING_SETTLEMENT,ar,معلق - غير مثبت,".غير مثبّت، لا يزال بانتظار التسديد"
+BlendedSettlementStatus,UNVERIFIED_SETTLED,en,Settled-Unverified,Settled but not verified yet.
+BlendedSettlementStatus,UNVERIFIED_SETTLED,ar,مسدد - غير مثبت,.تم التسديد ولكن لم يتم التثبيت بعد
+BlendedSettlementStatus,UNVERIFIED_SETTLED_EXCESS,en,Unverified-Overpaid,Settled with extra amount but not verified yet.
+BlendedSettlementStatus,UNVERIFIED_SETTLED_EXCESS,ar,مسدد زيادة - غير مثبت,.تم التسديد بمبلغ زائد ولكن لم يتم التثبيت بعد
+BlendedSettlementStatus,UNVERIFIED_SETTLED_SHORT,en,Unverified-Underpaid,Settled with missing amount but not verified yet.
+BlendedSettlementStatus,UNVERIFIED_SETTLED_SHORT,ar,مسدد ناقص - غير مثبت,.تم التسديد بمبلغ ناقص ولكن لم يتم التثبيت بعد
+BlendedSettlementStatus,UNVERIFIED_SETTLED_EXCEPTION,en,Unverified-Error,"Transaction is pending verification, marked as error."
+BlendedSettlementStatus,UNVERIFIED_SETTLED_EXCEPTION,ar,خطأ في التسديد - غير مثبت,".المعاملة قيد التثبيت، وتم تصنيفها كخطأ"
+BlendedSettlementStatus,VERIFIED_PENDING_SETTLEMENT,en,Pending-Verified,"Verified, waiting for settlement."
+BlendedSettlementStatus,VERIFIED_PENDING_SETTLEMENT,ar,مثبت - التسديد معلق,".تم التثبيت، بانتظار التسديد"
+BlendedSettlementStatus,VERIFIED_SETTLED,en,Settled,Fully settled and verified.
+BlendedSettlementStatus,VERIFIED_SETTLED,ar,مسدد,.تم التسديد والتثبيت بالكامل
+BlendedSettlementStatus,VERIFIED_SETTLED_EXCESS,en,Overpaid,Settled with extra amount.
+BlendedSettlementStatus,VERIFIED_SETTLED_EXCESS,ar,مسدد زيادة,.تم التسديد بمبلغ زائد
+BlendedSettlementStatus,VERIFIED_SETTLED_SHORT,en,Underpaid,Settled with missing amount.
+BlendedSettlementStatus,VERIFIED_SETTLED_SHORT,ar,مسدد ناقص,.تم التسديد بمبلغ ناقص
+BlendedSettlementStatus,VERIFIED_SETTLED_EXCEPTION,en,Settled-Exception,Settled with data discrepancy.
+BlendedSettlementStatus,VERIFIED_SETTLED_EXCEPTION,ar,خطأ في التسديد,.تم التسديد مع وجود اختلاف في البيانات
+BlendedSettlementStatus,EXCEPTION_PENDING_SETTLEMENT,en,Pending-Error,"Error found, waiting for settlement."
+BlendedSettlementStatus,EXCEPTION_PENDING_SETTLEMENT,ar,خطأ - التسديد معلق,".تم العثور على خطأ، بانتظار التسديد"
+BlendedSettlementStatus,EXCEPTION_SETTLED,en,Settled-Error,"Error found, but settled."
+BlendedSettlementStatus,EXCEPTION_SETTLED,ar,خطأ - مسدد,".تم العثور على خطأ، ولكن تم التسديد"
+BlendedSettlementStatus,EXCEPTION_SETTLED_EXCESS,en,Error-Overpaid,"Error found, but settled with extra amount."
+BlendedSettlementStatus,EXCEPTION_SETTLED_EXCESS,ar,خطأ - مسدد زيادة,".تم العثور على خطأ، وتم التسديد بمبلغ زائد"
+BlendedSettlementStatus,EXCEPTION_SETTLED_SHORT,en,Error-Underpaid,"Error found, but settled with missing amount."
+BlendedSettlementStatus,EXCEPTION_SETTLED_SHORT,ar,خطأ - مسدد ناقص,".تم العثور على خطأ، وتم التسديد بمبلغ ناقص"
+BlendedSettlementStatus,EXCEPTION_SETTLED_EXCEPTION,en,Error,Unresolved issue.
+BlendedSettlementStatus,EXCEPTION_SETTLED_EXCEPTION,ar,خطأ,.مشكلة لم يتم حلها
+BlendedChargesStatus,SOURCE_RECORD_MISSING_UNPOSTED,en,Missing-Not Posted,"No source data, waiting for posting."
+BlendedChargesStatus,SOURCE_RECORD_MISSING_UNPOSTED,ar,مفقود - غير مسجل,".لا توجد بيانات مصدر، في انتظار التسجيل"
+BlendedChargesStatus,SOURCE_RECORD_MISSING_POSTED,en,Missing-Posted,"No source data, but charges were posted."
+BlendedChargesStatus,SOURCE_RECORD_MISSING_POSTED,ar,مفقود - مسجل,".ا توجد بيانات مصدر، ولكن تم تسجيل الرسوم"
+BlendedChargesStatus,SOURCE_RECORD_MISSING_POSTED_EXCESS,en,Missing-Overcharged,"No source data, but charges were overcollected."
+BlendedChargesStatus,SOURCE_RECORD_MISSING_POSTED_EXCESS,ar,مفقود - مسجل زيادة,".لا توجد بيانات مصدر، ولكن تم تحصيل الرسوم بشكل زائد"
+BlendedChargesStatus,SOURCE_RECORD_MISSING_POSTED_SHORT,en,Missing-Undercharged,"No source data, but charges were undercollected."
+BlendedChargesStatus,SOURCE_RECORD_MISSING_POSTED_SHORT,ar,مفقود - مسجل ناقص,".لا توجد بيانات مصدر، ولكن تم تحصيل الرسوم بشكل ناقص"
+BlendedChargesStatus,SOURCE_RECORD_MISSING_POSTED_EXCEPTION,en,Missing-Error,No source data found and an error occurred in charges posting.
+BlendedChargesStatus,SOURCE_RECORD_MISSING_POSTED_EXCEPTION,ar,مفقود - خطأ في التسجيل,".لم يتم العثور على بيانات مصدر، وحدث خطأ في تسجيل الرسوم"
+BlendedChargesStatus,UNPOSTED,en,Pending,Waiting for posting.
+BlendedChargesStatus,UNPOSTED,ar,معلق,.في انتظار التسجيل
+BlendedChargesStatus,UNVERIFIED_UNPOSTED,en,Pending-Unverified,"Not verified, still pending posting."
+BlendedChargesStatus,UNVERIFIED_UNPOSTED,ar,معلق - غير مثبت,".غير مثبّت، لا يزال بانتظار التسجيل"
+BlendedChargesStatus,UNVERIFIED_POSTED,en,Posted-Unverified,Posted but not verified yet.
+BlendedChargesStatus,UNVERIFIED_POSTED,ar,مسجل - غير مثبت,.مُسَجَّل ولكن لم يتم التثبيت بعد
+BlendedChargesStatus,UNVERIFIED_POSTED_EXCESS,en,Unverified-Overcharged,Posted with extra amount but not verified yet.
+BlendedChargesStatus,UNVERIFIED_POSTED_EXCESS,ar,مسجل زيادة - غير مثبت,.مُسَجَّل بمبلغ زائد ولكن لم يتم التثبيت بعد
+BlendedChargesStatus,UNVERIFIED_POSTED_SHORT,en,Unverified-Undercharged,Posted with missing amount but not verified yet.
+BlendedChargesStatus,UNVERIFIED_POSTED_SHORT,ar,مسجل ناقص - غير مثبت,.مُسَجَّل بمبلغ ناقص ولكن لم يتم التثبيت بعد
+BlendedChargesStatus,UNVERIFIED_POSTED_EXCEPTION,en,Unverified-Error,"Charges are pending verification, marked as error."
+BlendedChargesStatus,UNVERIFIED_POSTED_EXCEPTION,ar,خطأ في التسجيل - غير مثبت,".الرسوم قيد التثبيت، وتم تصنيفها كخطأ"
+BlendedChargesStatus,VERIFIED_UNPOSTED,en,Pending-Verified,"Verified, waiting for posting."
+BlendedChargesStatus,VERIFIED_UNPOSTED,ar,مثبت - التسجيل معلق,".تم التثبيت، بانتظار التسجيل"
+BlendedChargesStatus,VERIFIED_POSTED,en,Posted,Fully posted and verified.
+BlendedChargesStatus,VERIFIED_POSTED,ar,مسجل,.مُسَجَّل ومثبت بالكامل
+BlendedChargesStatus,VERIFIED_POSTED_EXCESS,en,Overcharged,Posted with extra amount.
+BlendedChargesStatus,VERIFIED_POSTED_EXCESS,ar,مسجل زيادة,.مُسَجَّل بمبلغ زائد
+BlendedChargesStatus,VERIFIED_POSTED_SHORT,en,Undercharged,Posted with missing amount.
+BlendedChargesStatus,VERIFIED_POSTED_SHORT,ar,مسجل ناقص,.مُسَجَّل بمبلغ ناقص
+BlendedChargesStatus,VERIFIED_POSTED_EXCEPTION,en,Posted-Exception,Posted with data discrepancy.
+BlendedChargesStatus,VERIFIED_POSTED_EXCEPTION,ar,خطأ في التسجيل,.مُسَجَّل مع وجود اختلاف في البيانات
+BlendedChargesStatus,EXCEPTION_UNPOSTED,en,Pending-Error,"Error found, waiting for posting."
+BlendedChargesStatus,EXCEPTION_UNPOSTED,ar,خطأ - التسجيل معلق,".تم العثور على خطأ، في انتظار التسجيل"
+BlendedChargesStatus,EXCEPTION_POSTED,en,Posted-Error,"Error found, but posted."
+BlendedChargesStatus,EXCEPTION_POSTED,ar,خطأ - مسجل,".تم العثور على خطأ، ولكن تم التسجيل"
+BlendedChargesStatus,EXCEPTION_POSTED_EXCESS,en,Error-Overcharged,"Error found, but posted with extra amount."
+BlendedChargesStatus,EXCEPTION_POSTED_EXCESS,ar,خطأ - مسجل زيادة,".تم العثور على خطأ، وتم التسجيل بمبلغ زائد"
+BlendedChargesStatus,EXCEPTION_POSTED_SHORT,en,Error-Undercharged,"Error found, but posted with missing amount."
+BlendedChargesStatus,EXCEPTION_POSTED_SHORT,ar,خطأ - مسجل ناقص,".تم العثور على خطأ، وتم التسجيل بمبلغ ناقص"
+BlendedChargesStatus,EXCEPTION_POSTED_EXCEPTION,en,Error,Unresolved issue.
+BlendedChargesStatus,EXCEPTION_POSTED_EXCEPTION,ar,خطأ,.مشكلة لم يتم حلها

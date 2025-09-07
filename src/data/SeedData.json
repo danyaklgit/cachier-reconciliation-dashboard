@@ -1,0 +1,654 @@
+{
+  "acquirers": {
+    "RJHISARI": {
+      "en": {
+        "name": "Alrajhi Bank",
+        "description": ""
+      },
+      "ar": {
+        "name": "مصرف الراجحي",
+        "description": ""
+      }
+    }
+  },
+  "paymentMethods": {
+    "MADA": {
+      "en": {
+        "name": "Mada",
+        "description": ""
+      },
+      "ar": {
+        "name": "مدى",
+        "description": ""
+      }
+    },
+    "VISA": {
+      "en": {
+        "name": "Visa",
+        "description": ""
+      },
+      "ar": {
+        "name": "فيزا",
+        "description": ""
+      }
+    },
+    "MASTERCARD": {
+      "en": {
+        "name": "Mastercard",
+        "description": ""
+      },
+      "ar": {
+        "name": "ماستركارد",
+        "description": ""
+      }
+    },
+    "AMEX": {
+      "en": {
+        "name": "American Express",
+        "description": ""
+      },
+      "ar": {
+        "name": "أمريكان اكسبريس",
+        "description": ""
+      }
+    },
+    "DISCOVER": {
+      "en": {
+        "name": "Discover",
+        "description": ""
+      },
+      "ar": {
+        "name": "ديسكوفر",
+        "description": ""
+      }
+    },
+    "GCCNET": {
+      "en": {
+        "name": "GCC Net",
+        "description": ""
+      },
+      "ar": {
+        "name": "GCC شبكة",
+        "description": ""
+      }
+    },
+    "MAESTRO": {
+      "en": {
+        "name": "Maestro",
+        "description": ""
+      },
+      "ar": {
+        "name": "مايسترو",
+        "description": ""
+      }
+    },
+    "UNIONPAY": {
+      "en": {
+        "name": "UnionPay",
+        "description": ""
+      },
+      "ar": {
+        "name": "يونيون باي",
+        "description": ""
+      }
+    },
+    "UPI": {
+      "en": {
+        "name": "UPI",
+        "description": ""
+      },
+      "ar": {
+        "name": "UPI",
+        "description": ""
+      }
+    }
+  },
+  "mismatches": {
+    "INTRANSIT_MISSING_IN_SOURCE": {
+      "en": {
+        "name": "In-Transit Missing in Source",
+        "description": ""
+      },
+      "ar": {
+        "name": "قيد الانتظار - مفقود من الطرف الاول",
+        "description": ""
+      }
+    },
+    "INTRANSIT_MISSING_IN_DESTINATION": {
+      "en": {
+        "name": "In-Transit Missing in Destination",
+        "description": ""
+      },
+      "ar": {
+        "name": "قيد الانتظار مفقود من الطرف الثاني ",
+        "description": ""
+      }
+    },
+    "MISSING_IN_SOURCE": {
+      "en": {
+        "name": "Missing in Source",
+        "description": ""
+      },
+      "ar": {
+        "name": "مفقود من الطرف الاول",
+        "description": ""
+      }
+    },
+    "MISSING_IN_DESTINATION": {
+      "en": {
+        "name": "Missing in Destination",
+        "description": ""
+      },
+      "ar": {
+        "name": "مفقود  من الطرف الثاني",
+        "description": ""
+      }
+    },
+    "MISMATCH_AMOUNT": {
+      "en": {
+        "name": "Amount Mismatch",
+        "description": ""
+      },
+      "ar": {
+        "name": "المبلغ غير مطابق",
+        "description": ""
+      }
+    },
+    "MISMATCH_PAYMENT_METHOD": {
+      "en": {
+        "name": "Payment Method Mismatch",
+        "description": ""
+      },
+      "ar": {
+        "name": "طريقة الدفع غير مطابقة",
+        "description": ""
+      }
+    },
+    "MISMATCH_BANK_CHARGES": {
+      "en": {
+        "name": "Bank Charges Mismatch",
+        "description": ""
+      },
+      "ar": {
+        "name": "مبلغ الرسوم غير مطابق",
+        "description": ""
+      }
+    }
+  },
+  "statuses": {
+    "PENDING": {
+      "en": {
+        "name": "Pending",
+        "description": ""
+      },
+      "ar": {
+        "name": "معلق",
+        "description": ""
+      }
+    },
+    "INTRANSIT": {
+      "en": {
+        "name": "In Transit",
+        "description": ""
+      },
+      "ar": {
+        "name": "قيد النتظار",
+        "description": ""
+      }
+    },
+    "RECONCILED": {
+      "en": {
+        "name": "Reconciled",
+        "description": ""
+      },
+      "ar": {
+        "name": "مطابِق",
+        "description": ""
+      }
+    },
+    "CLEARED": {
+      "en": {
+        "name": "Cleared",
+        "description": ""
+      },
+      "ar": {
+        "name": "تمت مطابقته",
+        "description": ""
+      }
+    },
+    "EXCEPTION": {
+      "en": {
+        "name": "Exception",
+        "description": ""
+      },
+      "ar": {
+        "name": "خطأ",
+        "description": ""
+      }
+    }
+  },
+  "blendedSettlementStatuses": {
+    "SOURCE_RECORD_MISSING_PENDING_SETTLEMENT": {
+      "en": {
+        "name": "Missing-Not Settled",
+        "description": "No source data, waiting for settlement."
+      },
+      "ar": {
+        "name": "مفقود - غير مسدد",
+        "description": ".لا توجد بيانات مصدر، في انتظار التسديد"
+      }
+    },
+    "SOURCE_RECORD_MISSING_SETTLED": {
+      "en": {
+        "name": "Missing-Settled",
+        "description": "No source data, but transaction was settled."
+      },
+      "ar": {
+        "name": "مفقود مسدد",
+        "description": ".لا توجد بيانات مصدر، ولكن تم تسديد المعاملة"
+      }
+    },
+    "SOURCE_RECORD_MISSING_SETTLED_EXCESS": {
+      "en": {
+        "name": "Missing-Overpaid",
+        "description": "No source data, but transaction was settled with extra amount."
+      },
+      "ar": {
+        "name": "مفقود - مسدد زيادة",
+        "description": ".لا توجد بيانات مصدر، ولكن تم تسديد المعاملة بمبلغ زائد"
+      }
+    },
+    "SOURCE_RECORD_MISSING_SETTLED_SHORT": {
+      "en": {
+        "name": "Missing-Underpaid",
+        "description": "No source data, but transaction was settled with missing amount."
+      },
+      "ar": {
+        "name": "مفقود - مسدد ناقص",
+        "description": ".لا توجد بيانات مصدر، ولكن تم تسديد المعاملة بمبلغ ناقص"
+      }
+    },
+    "SOURCE_RECORD_MISSING_SETTLED_EXCEPTION": {
+      "en": {
+        "name": "Missing-Error",
+        "description": "No source data found and an error occurred in settlement."
+      },
+      "ar": {
+        "name": "مفقود - خطأ في التسديد",
+        "description": ".لم يتم العثور على بيانات مصدر، وحدث خطأ في التسديد"
+      }
+    },
+    "PENDING_SETTLEMENT": {
+      "en": {
+        "name": "Pending",
+        "description": "Waiting for settlement."
+      },
+      "ar": {
+        "name": "معلق",
+        "description": ".في انتظار التسديد"
+      }
+    },
+    "UNVERIFIED_PENDING_SETTLEMENT": {
+      "en": {
+        "name": "Pending-Unverified",
+        "description": "Not verified, still pending settlement."
+      },
+      "ar": {
+        "name": "معلق - غير مثبت",
+        "description": ".غير مثبّت، لا يزال بانتظار التسديد"
+      }
+    },
+    "UNVERIFIED_SETTLED": {
+      "en": {
+        "name": "Settled-Unverified",
+        "description": "Settled but not verified yet."
+      },
+      "ar": {
+        "name": "مسدد - غير مثبت",
+        "description": ".تم التسديد ولكن لم يتم التثبيت بعد"
+      }
+    },
+    "UNVERIFIED_SETTLED_EXCESS": {
+      "en": {
+        "name": "Unverified-Overpaid",
+        "description": "Settled with extra amount but not verified yet."
+      },
+      "ar": {
+        "name": "مسدد زيادة - غير مثبت",
+        "description": ".تم التسديد بمبلغ زائد ولكن لم يتم التثبيت بعد"
+      }
+    },
+    "UNVERIFIED_SETTLED_SHORT": {
+      "en": {
+        "name": "Unverified-Underpaid",
+        "description": "Settled with missing amount but not verified yet."
+      },
+      "ar": {
+        "name": "مسدد ناقص - غير مثبت",
+        "description": ".تم التسديد بمبلغ ناقص ولكن لم يتم التثبيت بعد"
+      }
+    },
+    "UNVERIFIED_SETTLED_EXCEPTION": {
+      "en": {
+        "name": "Unverified-Error",
+        "description": "Transaction is pending verification, marked as error."
+      },
+      "ar": {
+        "name": "خطأ في التسديد - غير مثبت",
+        "description": ".المعاملة قيد التثبيت، وتم تصنيفها كخطأ"
+      }
+    },
+    "VERIFIED_PENDING_SETTLEMENT": {
+      "en": {
+        "name": "Pending-Verified",
+        "description": "Verified, waiting for settlement."
+      },
+      "ar": {
+        "name": "مثبت - التسديد معلق",
+        "description": ".تم التثبيت، بانتظار التسديد"
+      }
+    },
+    "VERIFIED_SETTLED": {
+      "en": {
+        "name": "Settled",
+        "description": "Fully settled and verified."
+      },
+      "ar": {
+        "name": "مسدد",
+        "description": ".تم التسديد والتثبيت بالكامل"
+      }
+    },
+    "VERIFIED_SETTLED_EXCESS": {
+      "en": {
+        "name": "Overpaid",
+        "description": "Settled with extra amount."
+      },
+      "ar": {
+        "name": "مسدد زيادة",
+        "description": ".تم التسديد بمبلغ زائد"
+      }
+    },
+    "VERIFIED_SETTLED_SHORT": {
+      "en": {
+        "name": "Underpaid",
+        "description": "Settled with missing amount."
+      },
+      "ar": {
+        "name": "مسدد ناقص",
+        "description": ".تم التسديد بمبلغ ناقص"
+      }
+    },
+    "VERIFIED_SETTLED_EXCEPTION": {
+      "en": {
+        "name": "Settled-Exception",
+        "description": "Settled with data discrepancy."
+      },
+      "ar": {
+        "name": "خطأ في التسديد",
+        "description": ".تم التسديد مع وجود اختلاف في البيانات"
+      }
+    },
+    "EXCEPTION_PENDING_SETTLEMENT": {
+      "en": {
+        "name": "Pending-Error",
+        "description": "Error found, waiting for settlement."
+      },
+      "ar": {
+        "name": "خطأ - التسديد معلق",
+        "description": ".تم العثور على خطأ، بانتظار التسديد"
+      }
+    },
+    "EXCEPTION_SETTLED": {
+      "en": {
+        "name": "Settled-Error",
+        "description": "Error found, but settled."
+      },
+      "ar": {
+        "name": "خطأ - مسدد",
+        "description": ".تم العثور على خطأ، ولكن تم التسديد"
+      }
+    },
+    "EXCEPTION_SETTLED_EXCESS": {
+      "en": {
+        "name": "Error-Overpaid",
+        "description": "Error found, but settled with extra amount."
+      },
+      "ar": {
+        "name": "خطأ - مسدد زيادة",
+        "description": ".تم العثور على خطأ، وتم التسديد بمبلغ زائد"
+      }
+    },
+    "EXCEPTION_SETTLED_SHORT": {
+      "en": {
+        "name": "Error-Underpaid",
+        "description": "Error found, but settled with missing amount."
+      },
+      "ar": {
+        "name": "خطأ - مسدد ناقص",
+        "description": ".تم العثور على خطأ، وتم التسديد بمبلغ ناقص"
+      }
+    },
+    "EXCEPTION_SETTLED_EXCEPTION": {
+      "en": {
+        "name": "Error",
+        "description": "Unresolved issue."
+      },
+      "ar": {
+        "name": "خطأ",
+        "description": ".مشكلة لم يتم حلها"
+      }
+    }
+  },
+  "blendedChargesStatuses": {
+    "SOURCE_RECORD_MISSING_UNPOSTED": {
+      "en": {
+        "name": "Missing-Not Posted",
+        "description": "No source data, waiting for posting."
+      },
+      "ar": {
+        "name": "مفقود - غير مسجل",
+        "description": ".لا توجد بيانات مصدر، في انتظار التسجيل"
+      }
+    },
+    "SOURCE_RECORD_MISSING_POSTED": {
+      "en": {
+        "name": "Missing-Posted",
+        "description": "No source data, but charges were posted."
+      },
+      "ar": {
+        "name": "مفقود - مسجل",
+        "description": ".ا توجد بيانات مصدر، ولكن تم تسجيل الرسوم"
+      }
+    },
+    "SOURCE_RECORD_MISSING_POSTED_EXCESS": {
+      "en": {
+        "name": "Missing-Overcharged",
+        "description": "No source data, but charges were overcollected."
+      },
+      "ar": {
+        "name": "مفقود - مسجل زيادة",
+        "description": ".لا توجد بيانات مصدر، ولكن تم تحصيل الرسوم بشكل زائد"
+      }
+    },
+    "SOURCE_RECORD_MISSING_POSTED_SHORT": {
+      "en": {
+        "name": "Missing-Undercharged",
+        "description": "No source data, but charges were undercollected."
+      },
+      "ar": {
+        "name": "مفقود - مسجل ناقص",
+        "description": ".لا توجد بيانات مصدر، ولكن تم تحصيل الرسوم بشكل ناقص"
+      }
+    },
+    "SOURCE_RECORD_MISSING_POSTED_EXCEPTION": {
+      "en": {
+        "name": "Missing-Error",
+        "description": "No source data found and an error occurred in charges posting."
+      },
+      "ar": {
+        "name": "مفقود - خطأ في التسجيل",
+        "description": ".لم يتم العثور على بيانات مصدر، وحدث خطأ في تسجيل الرسوم"
+      }
+    },
+    "UNPOSTED": {
+      "en": {
+        "name": "Pending",
+        "description": "Waiting for posting."
+      },
+      "ar": {
+        "name": "معلق",
+        "description": ".في انتظار التسجيل"
+      }
+    },
+    "UNVERIFIED_UNPOSTED": {
+      "en": {
+        "name": "Pending-Unverified",
+        "description": "Not verified, still pending posting."
+      },
+      "ar": {
+        "name": "معلق - غير مثبت",
+        "description": ".غير مثبّت، لا يزال بانتظار التسجيل"
+      }
+    },
+    "UNVERIFIED_POSTED": {
+      "en": {
+        "name": "Posted-Unverified",
+        "description": "Posted but not verified yet."
+      },
+      "ar": {
+        "name": "مسجل - غير مثبت",
+        "description": ".مُسَجَّل ولكن لم يتم التثبيت بعد"
+      }
+    },
+    "UNVERIFIED_POSTED_EXCESS": {
+      "en": {
+        "name": "Unverified-Overcharged",
+        "description": "Posted with extra amount but not verified yet."
+      },
+      "ar": {
+        "name": "مسجل زيادة - غير مثبت",
+        "description": ".مُسَجَّل بمبلغ زائد ولكن لم يتم التثبيت بعد"
+      }
+    },
+    "UNVERIFIED_POSTED_SHORT": {
+      "en": {
+        "name": "Unverified-Undercharged",
+        "description": "Posted with missing amount but not verified yet."
+      },
+      "ar": {
+        "name": "مسجل ناقص - غير مثبت",
+        "description": ".مُسَجَّل بمبلغ ناقص ولكن لم يتم التثبيت بعد"
+      }
+    },
+    "UNVERIFIED_POSTED_EXCEPTION": {
+      "en": {
+        "name": "Unverified-Error",
+        "description": "Charges are pending verification, marked as error."
+      },
+      "ar": {
+        "name": "خطأ في التسجيل - غير مثبت",
+        "description": ".الرسوم قيد التثبيت، وتم تصنيفها كخطأ"
+      }
+    },
+    "VERIFIED_UNPOSTED": {
+      "en": {
+        "name": "Pending-Verified",
+        "description": "Verified, waiting for posting."
+      },
+      "ar": {
+        "name": "مثبت - التسجيل معلق",
+        "description": ".تم التثبيت، بانتظار التسجيل"
+      }
+    },
+    "VERIFIED_POSTED": {
+      "en": {
+        "name": "Posted",
+        "description": "Fully posted and verified."
+      },
+      "ar": {
+        "name": "مسجل",
+        "description": ".مُسَجَّل ومثبت بالكامل"
+      }
+    },
+    "VERIFIED_POSTED_EXCESS": {
+      "en": {
+        "name": "Overcharged",
+        "description": "Posted with extra amount."
+      },
+      "ar": {
+        "name": "مسجل زيادة",
+        "description": ".مُسَجَّل بمبلغ زائد"
+      }
+    },
+    "VERIFIED_POSTED_SHORT": {
+      "en": {
+        "name": "Undercharged",
+        "description": "Posted with missing amount."
+      },
+      "ar": {
+        "name": "مسجل ناقص",
+        "description": ".مُسَجَّل بمبلغ ناقص"
+      }
+    },
+    "VERIFIED_POSTED_EXCEPTION": {
+      "en": {
+        "name": "Posted-Exception",
+        "description": "Posted with data discrepancy."
+      },
+      "ar": {
+        "name": "خطأ في التسجيل",
+        "description": ".مُسَجَّل مع وجود اختلاف في البيانات"
+      }
+    },
+    "EXCEPTION_UNPOSTED": {
+      "en": {
+        "name": "Pending-Error",
+        "description": "Error found, waiting for posting."
+      },
+      "ar": {
+        "name": "خطأ - التسجيل معلق",
+        "description": ".تم العثور على خطأ، في انتظار التسجيل"
+      }
+    },
+    "EXCEPTION_POSTED": {
+      "en": {
+        "name": "Posted-Error",
+        "description": "Error found, but posted."
+      },
+      "ar": {
+        "name": "خطأ - مسجل",
+        "description": ".تم العثور على خطأ، ولكن تم التسجيل"
+      }
+    },
+    "EXCEPTION_POSTED_EXCESS": {
+      "en": {
+        "name": "Error-Overcharged",
+        "description": "Error found, but posted with extra amount."
+      },
+      "ar": {
+        "name": "خطأ - مسجل زيادة",
+        "description": ".تم العثور على خطأ، وتم التسجيل بمبلغ زائد"
+      }
+    },
+    "EXCEPTION_POSTED_SHORT": {
+      "en": {
+        "name": "Error-Undercharged",
+        "description": "Error found, but posted with missing amount."
+      },
+      "ar": {
+        "name": "خطأ - مسجل ناقص",
+        "description": ".تم العثور على خطأ، وتم التسجيل بمبلغ ناقص"
+      }
+    },
+    "EXCEPTION_POSTED_EXCEPTION": {
+      "en": {
+        "name": "Error",
+        "description": "Unresolved issue."
+      },
+      "ar": {
+        "name": "خطأ",
+        "description": ".مشكلة لم يتم حلها"
+      }
+    }
+  }
+}
