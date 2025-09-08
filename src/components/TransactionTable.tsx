@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Transaction, TransactionApiResponse, ColumnProperty } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
@@ -9,6 +9,7 @@ interface TransactionTableProps {
   onLoadMore?: () => void;
   isLoadingMore?: boolean;
   hasMoreData?: boolean;
+  handleClose: () => void;
 }
 
 interface PopupData {
@@ -19,10 +20,10 @@ interface PopupData {
 // Component to format decimal numbers with superscript decimal part
 const DecimalNumber = ({ num }: { num: number }) => {
   if (num === 0) return <span>-</span>;
-  
+
   const formatted = num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const [integerPart, decimalPart] = formatted.split('.');
-  
+
   return (
     <span className='text-sm'>
       {integerPart}
@@ -31,9 +32,32 @@ const DecimalNumber = ({ num }: { num: number }) => {
   );
 };
 
-export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData }: TransactionTableProps) {
+export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData, handleClose }: TransactionTableProps) {
   const [popupData, setPopupData] = useState<PopupData | null>(null);
   const lastRowRef = useRef<HTMLTableRowElement>(null);
+
+  useEffect(() => {
+    // Handle escape key to close popup or transaction
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (popupData) {
+          console.log('Escape key pressed, closing popup');
+          setPopupData(null);
+        } else {
+          console.log('Escape key pressed, closing transaction');
+          handleClose();
+        }
+      }
+    };
+
+    // Add event listener
+    document.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup event listener on unmount
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleClose, popupData]);
 
   // Sort column properties by ColumnOrder
   const sortedColumns = useMemo(() => {
@@ -44,7 +68,7 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData 
   const lastRowObserver = useCallback((node: HTMLTableRowElement | null) => {
     if (isLoadingMore) return;
     if (lastRowRef.current) lastRowRef.current = null;
-    
+
     if (node) {
       lastRowRef.current = node;
       const observer = new IntersectionObserver(
@@ -137,7 +161,7 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData 
   // Render cell content based on column type
   const renderCellContent = (transaction: Transaction, column: ColumnProperty) => {
     const value = getTransactionValue(transaction, column.ColumnAccessor);
-    
+
     if (column.IsList && Array.isArray(value)) {
       return (
         <div className="space-y-1">
@@ -155,14 +179,14 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData 
         </div>
       );
     }
-    
+
     return <span className="text-sm">{value}</span>;
   };
 
   // Settlement Status Popup Component
   const SettlementStatusPopup = ({ transaction }: { transaction: Transaction }) => (
     <Dialog open={!!popupData && popupData.type === 'settlement'} onOpenChange={() => setPopupData(null)}>
-      <DialogContent className="max-w-2xl bg-white">
+      <DialogContent className="max-w-2xl bg-white" onEscapeKeyDown={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Settlement Status Details</DialogTitle>
         </DialogHeader>
@@ -236,7 +260,7 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData 
   // Charges Popup Component
   const ChargesPopup = ({ transaction }: { transaction: Transaction }) => (
     <Dialog open={!!popupData && popupData.type === 'charges'} onOpenChange={() => setPopupData(null)}>
-      <DialogContent className="max-w-2xl bg-white">
+      <DialogContent className="max-w-2xl bg-white" onEscapeKeyDown={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Charges Details</DialogTitle>
         </DialogHeader>
@@ -359,56 +383,56 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData 
             {data.Transactions.map((transaction, index) => {
               const isLastRow = index === data.Transactions.length - 1;
               return (
-                <tr 
-                  key={transaction.TransactionReference} 
+                <tr
+                  key={transaction.TransactionReference}
                   ref={isLastRow ? lastRowObserver : null}
                   className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                 >
-                {/* Fixed Columns - First Chunk */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {transaction.TransactionReference}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatDate(transaction.TransactionDate)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatDateOnly(transaction.BusinessDay)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {transaction.PaymentMethodName}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <DecimalNumber num={transaction.TransactionAmount} />
-                </td>
-                <td className={`px-6 py-4 whitespace-nowrap text-sm ${transaction.IsInTransitOverdue ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
-                  {formatDateOnly(transaction.InTransitDueDate)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <button
-                    onClick={() => setPopupData({ type: 'settlement', transaction })}
-                    className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer hover:opacity-80 transition-opacity ${getSettlementStatusColor(transaction)}`}
-                  >
-                    {transaction.BlendedSettlementStatusName || transaction.BlendedSettlementStatusTag}
-                  </button>
-                </td>
-
-                {/* Dynamic Columns */}
-                {sortedColumns.map((column) => (
-                  <td key={column.ColumnAccessor} className="px-6 py-4 text-sm text-gray-900">
-                    {renderCellContent(transaction, column)}
+                  {/* Fixed Columns - First Chunk */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {transaction.TransactionReference}
                   </td>
-                ))}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatDate(transaction.TransactionDate)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatDateOnly(transaction.BusinessDay)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {transaction.PaymentMethodName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <DecimalNumber num={transaction.TransactionAmount} />
+                  </td>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${transaction.IsInTransitOverdue ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
+                    {formatDateOnly(transaction.InTransitDueDate)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <button
+                      onClick={() => setPopupData({ type: 'settlement', transaction })}
+                      className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer hover:opacity-80 transition-opacity ${getSettlementStatusColor(transaction)}`}
+                    >
+                      {transaction.BlendedSettlementStatusName || transaction.BlendedSettlementStatusTag}
+                    </button>
+                  </td>
 
-                {/* Fixed Columns - Second Chunk */}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <button
-                    onClick={() => setPopupData({ type: 'charges', transaction })}
-                    className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer hover:opacity-80 transition-opacity ${getChargesStatusColor(transaction)}`}
-                  >
-                    {transaction.Charges.BlendedChargesStatusName || transaction.Charges.BlendedChargesStatusTag}
-                  </button>
-                </td>
-              </tr>
+                  {/* Dynamic Columns */}
+                  {sortedColumns.map((column) => (
+                    <td key={column.ColumnAccessor} className="px-6 py-4 text-sm text-gray-900">
+                      {renderCellContent(transaction, column)}
+                    </td>
+                  ))}
+
+                  {/* Fixed Columns - Second Chunk */}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <button
+                      onClick={() => setPopupData({ type: 'charges', transaction })}
+                      className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer hover:opacity-80 transition-opacity ${getChargesStatusColor(transaction)}`}
+                    >
+                      {transaction.Charges.BlendedChargesStatusName || transaction.Charges.BlendedChargesStatusTag}
+                    </button>
+                  </td>
+                </tr>
               );
             })}
           </tbody>

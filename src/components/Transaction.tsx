@@ -88,22 +88,7 @@ export function Transaction({
         };
     }, []);
 
-    useEffect(() => {
-        // Handle escape key to close transaction
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                handleClose();
-            }
-        };
 
-        // Add event listener
-        document.addEventListener('keydown', handleKeyDown);
-
-        // Cleanup event listener on unmount
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [handleClose]);
 
     // Function to find parent node in the hierarchy
     const findParentNode = useCallback((targetNode: DataNode, data: DataNode[]): DataNode | null => {
@@ -439,6 +424,7 @@ export function Transaction({
                                 onLoadMore={loadMoreTransactions}
                                 isLoadingMore={loadingMore}
                                 hasMoreData={hasMoreData}
+                                handleClose={handleClose}
                             /></>
                             : <div className="flex flex-col items-center justify-center"><h2 className="text-lg !m-0 text-center font-semibold text-slate-700 mb-4 flex items-center gap-2">
                                 No Transactions Found
