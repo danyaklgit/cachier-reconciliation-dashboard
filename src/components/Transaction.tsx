@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { DataNode, Topic } from '@/types';
+import { JsonViewer } from '@/components/ui/json-viewer';
 
 interface TransactionProps {
     row: DataNode;
@@ -284,11 +285,11 @@ export function Transaction({
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Generated Criteria</label>
-                                <div className="bg-white border border-gray-200 rounded p-3">
-                                    <pre className="text-sm text-gray-800">
-                                        {JSON.stringify(buildCriteria(row, dashboardData), null, 2)}
-                                    </pre>
-                                </div>
+                                <JsonViewer 
+                                    data={buildCriteria(row, dashboardData)} 
+                                    title="API Request Criteria"
+                                    defaultExpanded={true}
+                                />
                             </div>
                         </div>
                     )}
@@ -298,12 +299,12 @@ export function Transaction({
                                     ? 'opacity-100 transform translate-y-0'
                                     : 'opacity-0 transform translate-y-8'
                                 }`} style={{ transitionDelay: isVisible ? '200ms' : '0ms' }}>
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">GetTransactions API Response</h2>
-                                <div className="bg-gray-50 rounded-lg p-4 overflow-auto">
-                                    <pre className="text-sm text-gray-800 whitespace-pre-wrap">
-                                        {JSON.stringify(apiResponse, null, 2)}
-                                    </pre>
-                                </div>
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4">Transactions: {apiResponse?.Transactions?.length || 0}</h2>
+                                <JsonViewer 
+                                    data={apiResponse.Transactions || []} 
+                                    title="Transaction Data"
+                                    defaultExpanded={true}
+                                />
                             </div>
                         )}
                     </div>
