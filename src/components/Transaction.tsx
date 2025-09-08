@@ -190,7 +190,7 @@ export function Transaction({
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Transaction Details</h1>
-                    <p className="text-sm text-gray-600 mt-1">ID: {row.Id}</p>
+                    {/* <p className="text-sm text-gray-600 mt-1">ID: {row.Id}</p> */}
                 </div>
                 <button
                     onClick={handleClose}

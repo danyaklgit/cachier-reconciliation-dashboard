@@ -53,6 +53,7 @@ function DashboardContent() {
   const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
   const [tenantsLoading, setTenantsLoading] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<DataNode | null>(null);
+  const [highlightedRowId, setHighlightedRowId] = useState<string | null>(null);
 
   // New selection states
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
@@ -681,10 +682,25 @@ function DashboardContent() {
   };
 
   const viewTransaction = (row: DataNode) => {
-    setSelectedTransaction(row);
+    setHighlightedRowId(row.Id);
+    setTimeout(() => {
+      setHighlightedRowId(null);
+      setSelectedTransaction(row);
+    }, 500);
+    // setSelectedTransaction(row);
   };
 
   const closeTransaction = () => {
+    // Highlight the row that was clicked
+    if (selectedTransaction) {
+      setHighlightedRowId(selectedTransaction.Id);
+      
+      // Remove highlighting after 2 seconds
+      setTimeout(() => {
+        setHighlightedRowId(null);
+      }, 1000);
+    }
+    
     setSelectedTransaction(null);
   };
 
@@ -1458,6 +1474,7 @@ function DashboardContent() {
                 data={dashboardData.ChildNodes}
                 filterState={{}}
                 viewTransaction={viewTransaction}
+                highlightedRowId={highlightedRowId}
               />
             </CardContent>
           </Card>

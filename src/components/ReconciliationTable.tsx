@@ -24,6 +24,7 @@ interface ReconciliationTableProps {
   data: DataNode[];
   filterState: FilterState;
   viewTransaction: (row: DataNode) => void;
+  highlightedRowId?: string | null;
 }
 
 // Component to format decimal numbers with superscript decimal part
@@ -96,7 +97,7 @@ const getCellStyle = (value: number, columnType: string) => {
   // }
 };
 
-export function ReconciliationTable({ data, filterState, viewTransaction = () => { } }: ReconciliationTableProps) {
+export function ReconciliationTable({ data, filterState, viewTransaction = () => { }, highlightedRowId }: ReconciliationTableProps) {
   const [expanded, setExpanded] = useState<ExpandedState>({});
   const [isExpanding, setIsExpanding] = useState(false);
   const expandTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -549,6 +550,11 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
   const displayedRows = allRows.slice(0, visibleRows);
   const hasMoreRows = visibleRows < allRows.length;
 
+  // Function to check if a row should be highlighted
+  const isRowHighlighted = (rowId: string): boolean => {
+    return highlightedRowId === rowId;
+  };
+
   return (
     <div className="overflow-x-auto  bg-white" ref={tableRef}>
       <table className="w-full border-collapse" {...{
@@ -584,6 +590,10 @@ export function ReconciliationTable({ data, filterState, viewTransaction = () =>
               key={row.id} 
               className={`${getRowStyle(row.original.NodeTag, row.depth)} transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/30 hover:shadow-sm border-b border-modern-light/50 ${
                 index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'
+              } ${
+                isRowHighlighted(row.id) 
+                  ? 'bg-gradient-to-r from-blue-100/60 to-indigo-100/40 border-blue-200 shadow-sm ring-1 ring-blue-300 ring-opacity-30 animate-pulse' 
+                  : ''
               }`}
             >
               {row.getVisibleCells().map((cell) => (
