@@ -728,8 +728,8 @@ function DashboardContent() {
         <TooltipTrigger>
           <InfoIcon className="w-4 h-4" />
         </TooltipTrigger>
-        <TooltipContent className='text-xs bg-white p-3 py-2'>This filter applies to
-          <span className='font-medium px-1 flex flex-col gap-1'>{
+        <TooltipContent className='text-xs bg-white p-3 py-2 italic '>This filter applies to
+          <span className='font-medium px-1 flex flex-col gap-1 mt-1'>{
             appliesToTopics?.map(topic => topic.Label).map(label => <span key={label}>{label}</span>)
           }
           </span>
@@ -1188,7 +1188,7 @@ function DashboardContent() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg">
-                      <FilterIcon className="w-3 h-3 text-white" />
+                      <FilterIcon className="w-4 h-4 text-white" />
                     </div>
                     <div>
                       <CardTitle className="text-heading text-gray-900">Custom Filters</CardTitle>
