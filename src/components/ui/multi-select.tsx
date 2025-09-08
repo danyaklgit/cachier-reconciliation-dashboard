@@ -190,7 +190,7 @@ export function MultiSelect({
           <span className="truncate">{displayText}</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 ml-15 p-0 bg-white">
+      <PopoverContent className="w-80 p-0 bg-white" align="start">
         <div className="p-3 border-b">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-medium">Options</span>
