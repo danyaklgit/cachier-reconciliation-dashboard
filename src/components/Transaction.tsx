@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { DataNode, Topic } from '@/types';
+import { DataNode, Topic, TransactionApiResponse } from '@/types';
 import { JsonViewer } from '@/components/ui/json-viewer';
+import { TransactionTable } from '@/components/TransactionTable';
 
 interface TransactionProps {
     row: DataNode;
@@ -51,8 +52,7 @@ export function Transaction({
 }: TransactionProps) {
     const [isVisible, setIsVisible] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [apiResponse, setApiResponse] = useState<any>(null);
+  const [apiResponse, setApiResponse] = useState<TransactionApiResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -221,7 +221,7 @@ export function Transaction({
 
             {/* Content */}
             <div className="p-6">
-                <div className="max-w-6xl mx-auto">
+                <div className="max-w-8xl mx-auto">
                     {/* Loading State */}
                     {loading && (
                         <div className={`bg-blue-50 border border-blue-200 rounded-lg p-8 mb-6 transition-all duration-500 ease-out ${isVisible && !isClosing
@@ -247,67 +247,16 @@ export function Transaction({
                         </div>
                     )}
 
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                        {/* API Repuest */}
-                        {/* Request Details */}
-                    {!loading && (
-                        <div className={`bg-gray-50 rounded-lg p-6 mb-6 transition-all duration-500 ease-out ${isVisible && !isClosing
+                    {/* API Response */}
+                    {apiResponse && !loading && !error && (
+                        <div className={`bg-white border border-gray-200 rounded-lg p-6 transition-all duration-500 max-h-[80dvh] overflow-auto ease-out ${isVisible && !isClosing
                                 ? 'opacity-100 transform translate-y-0'
                                 : 'opacity-0 transform translate-y-8'
-                            }`} style={{ transitionDelay: isVisible ? '300ms' : '0ms' }}>
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Request Details</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Selected Row</label>
-                                    <p className="mt-1 text-sm text-gray-900">{row.NodeLabel} ({row.NodeTag})</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Row ID</label>
-                                    <p className="mt-1 text-sm text-gray-900">{row.Id}</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Tenant Code</label>
-                                    <p className="mt-1 text-sm text-gray-900">{getTenantCode()}</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Business Day</label>
-                                    <p className="mt-1 text-sm text-gray-900">{selectedBusinessDay}</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Area IDs</label>
-                                    <p className="mt-1 text-sm text-gray-900">{selectedAreas.join(', ')}</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Outlet IDs</label>
-                                    <p className="mt-1 text-sm text-gray-900">{selectedOutlets.join(', ')}</p>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Generated Criteria</label>
-                                <JsonViewer 
-                                    data={buildCriteria(row, dashboardData)} 
-                                    title="API Request Criteria"
-                                    defaultExpanded={true}
-                                />
-                            </div>
+                            }`} style={{ transitionDelay: isVisible ? '200ms' : '0ms' }}>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Transactions: {apiResponse?.Transactions?.length || 0}</h2>
+                            <TransactionTable data={apiResponse} />
                         </div>
                     )}
-                        {/* API Response */}
-                        {apiResponse && !loading && !error && (
-                            <div className={`bg-white border border-gray-200 rounded-lg p-6 transition-all duration-500 max-h-[80dvh] overflow-auto ease-out ${isVisible && !isClosing
-                                    ? 'opacity-100 transform translate-y-0'
-                                    : 'opacity-0 transform translate-y-8'
-                                }`} style={{ transitionDelay: isVisible ? '200ms' : '0ms' }}>
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">Transactions: {apiResponse?.Transactions?.length || 0}</h2>
-                                <JsonViewer 
-                                    data={apiResponse || []} 
-                                    title="Transaction Data"
-                                    defaultExpanded={true}
-                                />
-                            </div>
-                        )}
-                    </div>
 
                    
                 </div>

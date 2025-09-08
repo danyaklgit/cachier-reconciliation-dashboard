@@ -62,6 +62,84 @@ export interface Topic {
   DefaultFilterHierarchy: string[];
 }
 
+// Transaction API Response Types
+export interface ColumnProperty {
+  ColumnAccessor: string;
+  ColumnLabel: string;
+  ColumnOrder: number;
+  ColumnInfo: string | null;
+  IsList: boolean;
+}
+
+export interface TransactionAttribute {
+  Key: string;
+  Value: string;
+}
+
+export interface TransactionCharges {
+  ContractualFeesAmount: number;
+  ContractualVATAmount: number;
+  AppliedFeesAmount: number;
+  AppliedVATAmount: number;
+  AppliedChargesAmount: number;
+  ChargesVariance: number;
+  ChargesReconciliationStatusTag: string;
+  ChargesPostingStatusTag: string;
+  PostingsAmount: number;
+  PostingsBatchAmount: number;
+  PostingsVariance: number;
+  BatchReconciliationReference: string;
+  BatchReconciliationDate: string;
+  BlendedChargesStatusTag: string;
+  // Optional fields that might be missing from API
+  BlendedChargesStatusName?: string;
+  ChargeMismatchNames?: string | null;
+}
+
+export interface Transaction {
+  TransactionReference: string;
+  TransactionDate: string;
+  BusinessDay: string;
+  BDInstance: number;
+  PaymentMethodTag: string;
+  PaymentMethodName: string;
+  AreaId: number;
+  AreaCode: string;
+  AreaName: string;
+  OutletId: number;
+  OutletCode: string;
+  OutletName: string;
+  TransactionTerminalCode: string;
+  RRN: string;
+  AuthorizationCode: string;
+  Brand: string;
+  Customer: string;
+  Attributes: TransactionAttribute[];
+  TransactionCurrency: string;
+  TransactionAmount: number;
+  AcquirerTransactionAmount: number;
+  TransactionVariance: number;
+  InTransitDueDate: string;
+  IsInTransitOverdue: boolean;
+  ReconciliationStatusTag: string;
+  SettlementStatusTag: string;
+  BatchTransactionsAmount: number;
+  SettlementBatchAmount: number;
+  SettlementVariance: number;
+  BatchReconciliationReference: string;
+  BatchReconciliationDate: string;
+  BlendedSettlementStatusTag: string;
+  Charges: TransactionCharges;
+  // Optional fields that might be missing from API
+  BlendedSettlementStatusName?: string;
+  MismatchNames?: string | null;
+}
+
+export interface TransactionApiResponse {
+  ColumnProperties: ColumnProperty[];
+  Transactions: Transaction[];
+}
+
 export interface Area {
   AreaId: number;
   AreaCode: string;
