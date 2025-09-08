@@ -45,8 +45,8 @@ export function Transaction({
 }: TransactionProps) {
     const [isVisible, setIsVisible] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
-    const [apiResponse, setApiResponse] = useState<any>(null);
-    const [apiRequest, setApiRequest] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [apiResponse, setApiResponse] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -154,8 +154,6 @@ export function Transaction({
                     BusinessDay: selectedBusinessDay,
                     Criteria: criteria
                 };
-
-                setApiRequest(requestJson);
 
                 const response = await fetch('/api/get-transactions', {
                     method: 'POST',
