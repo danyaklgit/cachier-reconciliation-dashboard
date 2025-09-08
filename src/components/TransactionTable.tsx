@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { Transaction, TransactionApiResponse, ColumnProperty } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface TransactionTableProps {
   data: TransactionApiResponse;
+  onLoadMore?: () => void;
+  isLoadingMore?: boolean;
+  hasMoreData?: boolean;
 }
 
 interface PopupData {
@@ -13,13 +16,48 @@ interface PopupData {
   transaction: Transaction;
 }
 
-export function TransactionTable({ data }: TransactionTableProps) {
+// Component to format decimal numbers with superscript decimal part
+const DecimalNumber = ({ num }: { num: number }) => {
+  if (num === 0) return <span>-</span>;
+  
+  const formatted = num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const [integerPart, decimalPart] = formatted.split('.');
+  
+  return (
+    <span className='text-sm'>
+      {integerPart}
+      <sup className="text-[10px] top-[-3px] font-normal">.{decimalPart}</sup>
+    </span>
+  );
+};
+
+export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData }: TransactionTableProps) {
   const [popupData, setPopupData] = useState<PopupData | null>(null);
+  const lastRowRef = useRef<HTMLTableRowElement>(null);
 
   // Sort column properties by ColumnOrder
   const sortedColumns = useMemo(() => {
     return [...data.ColumnProperties].sort((a, b) => a.ColumnOrder - b.ColumnOrder);
   }, [data.ColumnProperties]);
+
+  // Intersection observer callback for infinite scroll
+  const lastRowObserver = useCallback((node: HTMLTableRowElement | null) => {
+    if (isLoadingMore) return;
+    if (lastRowRef.current) lastRowRef.current = null;
+    
+    if (node) {
+      lastRowRef.current = node;
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasMoreData && onLoadMore && !isLoadingMore) {
+            onLoadMore();
+          }
+        },
+        { threshold: 0.1 }
+      );
+      observer.observe(node);
+    }
+  }, [isLoadingMore, hasMoreData, onLoadMore]);
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -36,8 +74,24 @@ export function TransactionTable({ data }: TransactionTableProps) {
     }
   };
 
+  // Format date only (no time) for display
+  const formatDateOnly = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
   // Format currency amount
-  const formatAmount = (amount: number) => {
+  const formatAmount = (amount: number | undefined | null) => {
+    if (amount === undefined || amount === null || isNaN(amount)) {
+      return '-';
+    }
     return amount.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
@@ -129,7 +183,7 @@ export function TransactionTable({ data }: TransactionTableProps) {
           </div>
           <div className="text-center">
             <label className="block text-sm font-medium text-gray-700">Variance</label>
-            <p className={`text-lg font-semibold ${transaction.TransactionVariance !== 0 ? 'text-red-600' : 'text-green-600'}`}>
+            <p className={`text-lg font-semibold ${transaction.TransactionVariance && transaction.TransactionVariance !== 0 ? 'text-red-600' : 'text-green-600'}`}>
               {formatAmount(transaction.TransactionVariance)}
             </p>
           </div>
@@ -158,7 +212,7 @@ export function TransactionTable({ data }: TransactionTableProps) {
           </div>
           <div className="text-center">
             <label className="block text-sm font-medium text-gray-700">Settlement Variance</label>
-            <p className={`text-lg font-semibold ${transaction.SettlementVariance !== 0 ? 'text-red-600' : 'text-green-600'}`}>
+            <p className={`text-lg font-semibold ${transaction.SettlementVariance && transaction.SettlementVariance !== 0 ? 'text-red-600' : 'text-green-600'}`}>
               {formatAmount(transaction.SettlementVariance)}
             </p>
           </div>
@@ -205,7 +259,7 @@ export function TransactionTable({ data }: TransactionTableProps) {
           </div>
           <div className="text-center">
             <label className="block text-sm font-medium text-gray-700">Charges Variance</label>
-            <p className={`text-lg font-semibold ${transaction.Charges.ChargesVariance !== 0 ? 'text-red-600' : 'text-green-600'}`}>
+            <p className={`text-lg font-semibold ${transaction.Charges.ChargesVariance && transaction.Charges.ChargesVariance !== 0 ? 'text-red-600' : 'text-green-600'}`}>
               {formatAmount(transaction.Charges.ChargesVariance)}
             </p>
           </div>
@@ -234,7 +288,7 @@ export function TransactionTable({ data }: TransactionTableProps) {
           </div>
           <div className="text-center">
             <label className="block text-sm font-medium text-gray-700">Postings Variance</label>
-            <p className={`text-lg font-semibold ${transaction.Charges.PostingsVariance !== 0 ? 'text-red-600' : 'text-green-600'}`}>
+            <p className={`text-lg font-semibold ${transaction.Charges.PostingsVariance && transaction.Charges.PostingsVariance !== 0 ? 'text-red-600' : 'text-green-600'}`}>
               {formatAmount(transaction.Charges.PostingsVariance)}
             </p>
           </div>
@@ -258,9 +312,9 @@ export function TransactionTable({ data }: TransactionTableProps) {
   return (
     <div className="w-full">
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-auto max-h-[70vh] border border-gray-200 rounded-lg">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
             <tr>
               {/* Fixed Columns - First Chunk */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -302,8 +356,14 @@ export function TransactionTable({ data }: TransactionTableProps) {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {data.Transactions.map((transaction, index) => (
-              <tr key={transaction.TransactionReference} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+            {data.Transactions.map((transaction, index) => {
+              const isLastRow = index === data.Transactions.length - 1;
+              return (
+                <tr 
+                  key={transaction.TransactionReference} 
+                  ref={isLastRow ? lastRowObserver : null}
+                  className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                >
                 {/* Fixed Columns - First Chunk */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {transaction.TransactionReference}
@@ -312,16 +372,16 @@ export function TransactionTable({ data }: TransactionTableProps) {
                   {formatDate(transaction.TransactionDate)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatDate(transaction.BusinessDay)}
+                  {formatDateOnly(transaction.BusinessDay)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {transaction.PaymentMethodName}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatAmount(transaction.TransactionAmount)}
+                  <DecimalNumber num={transaction.TransactionAmount} />
                 </td>
                 <td className={`px-6 py-4 whitespace-nowrap text-sm ${transaction.IsInTransitOverdue ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
-                  {formatDate(transaction.InTransitDueDate)}
+                  {formatDateOnly(transaction.InTransitDueDate)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
@@ -349,10 +409,29 @@ export function TransactionTable({ data }: TransactionTableProps) {
                   </button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
+
+        {/* Loading indicator at bottom when loading more */}
+        {isLoadingMore && (
+          <div className="bg-white border-t border-gray-200 p-4 flex justify-center">
+            <div className="flex items-center space-x-2 text-gray-600">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <span className="text-sm">Loading more transactions...</span>
+            </div>
+          </div>
+        )}
+
+        {/* No More Data Message */}
+        {!hasMoreData && data.Transactions.length > 0 && (
+          <div className="bg-white border-t border-gray-200 p-4 text-center">
+            <p className="text-gray-500 text-sm">No more transactions to load</p>
+          </div>
+        )}
       </div>
+
 
       {/* Popups */}
       {popupData?.type === 'settlement' && <SettlementStatusPopup transaction={popupData.transaction} />}
