@@ -1469,6 +1469,12 @@ function DashboardContent() {
         <Transaction
           row={selectedTransaction}
           onClose={closeTransaction}
+          selectedTenant={selectedTenant}
+          selectedAreas={selectedAreas}
+          selectedOutlets={selectedOutlets}
+          selectedBusinessDay={selectedBusinessDay}
+          dashboardData={dashboardData?.ChildNodes || []}
+          tenantsData={tenantsData}
         />
       )}
     </div>
