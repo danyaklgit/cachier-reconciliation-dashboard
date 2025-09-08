@@ -301,7 +301,7 @@ export function Transaction({
                                 }`} style={{ transitionDelay: isVisible ? '200ms' : '0ms' }}>
                                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Transactions: {apiResponse?.Transactions?.length || 0}</h2>
                                 <JsonViewer 
-                                    data={apiResponse.Transactions || []} 
+                                    data={apiResponse || []} 
                                     title="Transaction Data"
                                     defaultExpanded={true}
                                 />
