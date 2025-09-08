@@ -1492,6 +1492,7 @@ function DashboardContent() {
           selectedBusinessDay={selectedBusinessDay}
           dashboardData={dashboardData?.ChildNodes || []}
           tenantsData={tenantsData}
+          topicsData={topicsData}
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { DataNode } from '@/types';
+import { DataNode, Topic } from '@/types';
 
 interface TransactionProps {
     row: DataNode;
@@ -13,24 +13,28 @@ interface TransactionProps {
     selectedBusinessDay: string;
     // Full dashboard data to find parent relationships
     dashboardData: DataNode[];
-    // Tenants data to get tenant code
-    tenantsData: {
-        Tenants: Array<{
-            TenantId: number;
-            TenantCode: string;
-            TenantName: string;
-            Areas: Array<{
-                AreaId: number;
-                AreaCode: string;
-                AreaName: string;
-                Outlets: Array<{
-                    OutletId: number;
-                    OutletCode: string;
-                    OutletName: string;
-                }>;
-            }>;
-        }>
-    };
+  // Tenants data to get tenant code
+  tenantsData: {
+    Tenants: Array<{
+      TenantId: number;
+      TenantCode: string;
+      TenantName: string;
+      Areas: Array<{
+        AreaId: number;
+        AreaCode: string;
+        AreaName: string;
+        Outlets: Array<{
+          OutletId: number;
+          OutletCode: string;
+          OutletName: string;
+        }>;
+      }>;
+    }>
+  };
+  // Topics data to get Topic.Tag from Topic.Label
+  topicsData: {
+    Topics: Topic[];
+  };
 }
 
 export function Transaction({
@@ -41,7 +45,8 @@ export function Transaction({
     selectedOutlets,
     selectedBusinessDay,
     dashboardData,
-    tenantsData
+    tenantsData,
+    topicsData
 }: TransactionProps) {
     const [isVisible, setIsVisible] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
@@ -109,12 +114,27 @@ export function Transaction({
             };
 
             // Use FilterValue for ROUTE, Value for others
-            //   if (currentNode.NodeTag === 'ROUTE') {
+            // if (currentNode.NodeTag === 'ROUTE') {
             //     criteriaItem.FilterValue = currentNode.NodeLabel;
-            //   } else {
-            criteriaItem.Value = currentNode.NodeLabel;
-            //   }
+            // } else if (currentNode.NodeTag === 'TOPIC') {
+            //     // For TOPIC nodes, find the Topic.Tag from topicsData using the NodeLabel
+            //     const topic = topicsData.Topics.find(t => t.Label === currentNode.NodeLabel);
+            //     criteriaItem.Value = topic?.Tag || currentNode.NodeLabel; // Fallback to NodeLabel if not found
+            // } else {
+            //     criteriaItem.Value = currentNode.NodeLabel;
+            // }
 
+            if (currentNode.NodeTag === 'TOPIC') {
+                // For TOPIC nodes, find the Topic.Tag from topicsData using the NodeLabel
+                const topic = topicsData.Topics.find(t => t.Label === currentNode.NodeLabel);
+                criteriaItem.Value = topic?.Tag || currentNode.NodeLabel; // Fallback to NodeLabel if not found
+            } else {
+                criteriaItem.Value = currentNode.NodeLabel;
+            }
+
+            const topic = topicsData.Topics.find(t => t.Label === currentNode.NodeLabel);
+            criteriaItem.Value = topic?.Tag || currentNode.NodeLabel;
+            
             criteria.push(criteriaItem);
 
             // Stop when we reach TOPIC
@@ -130,7 +150,7 @@ export function Transaction({
 
         // Reverse to get TOPIC first
         return criteria.reverse();
-    }, [findParentNode]);
+    }, [findParentNode, topicsData.Topics]);
 
     // Function to get tenant code from selected tenant
     const getTenantCode = useCallback((): string => {
@@ -177,7 +197,7 @@ export function Transaction({
         };
 
         callGetTransactionsAPI();
-    }, [row, selectedTenant, selectedAreas, selectedOutlets, selectedBusinessDay, dashboardData, tenantsData, buildCriteria, getTenantCode]);
+    }, [row, selectedTenant, selectedAreas, selectedOutlets, selectedBusinessDay, dashboardData, tenantsData, topicsData, buildCriteria, getTenantCode]);
 
     return (
         <div className={`fixed inset-0 z-50 bg-white overflow-auto transition-all duration-300 ease-in-out ${isVisible && !isClosing
