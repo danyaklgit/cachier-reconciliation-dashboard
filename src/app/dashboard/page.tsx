@@ -1209,9 +1209,9 @@ function DashboardContent() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className={`flex flex-col ${Object.keys(filterState).length > 0 ? 'gap-6' : 'gap-4'}`}>
+              <CardContent className={`flex flex-col gap-2`}>
                 {/* Filter Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2">
                   {availableFilters.map((filter) => (
                     <div key={filter.Tag} className="space-y-3 group">
                       <div className="flex items-center justify-between">
@@ -1296,7 +1296,7 @@ function DashboardContent() {
 
                 {/* Filter Button - Only show when there are unapplied changes */}
                 {hasUnappliedChanges() && (
-                  <div className="flex justify-center pt-4 ">
+                  <div className="flex justify-center pt-2 ">
                     <Button
                       onClick={handleApplyFilters}
                       className="bg-gradient-to-r cursor-pointer from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-3 rounded-lg shadow-card hover:shadow-lg transition-all duration-200 font-semibold animate-pulse"
