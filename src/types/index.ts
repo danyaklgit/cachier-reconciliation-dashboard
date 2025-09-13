@@ -93,7 +93,7 @@ export interface TransactionCharges {
   BlendedChargesStatusTag: string;
   // Optional fields that might be missing from API
   BlendedChargesStatusName?: string;
-  ChargeMismatchNames?: string | null;
+  ChargeMismatchNames?: Array<{ value: string }> | null;
 }
 
 export interface Transaction {
@@ -132,7 +132,7 @@ export interface Transaction {
   Charges: TransactionCharges;
   // Optional fields that might be missing from API
   BlendedSettlementStatusName?: string;
-  MismatchNames?: string | null;
+  MismatchNames?: Array<{ value: string }> | null;
 }
 
 export interface TransactionApiResponse {

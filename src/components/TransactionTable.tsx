@@ -83,29 +83,29 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
     }
   }, [isLoadingMore, hasMoreData, onLoadMore]);
 
-  // Format date for display
+  // Format date for display (dd-mm-yyyy hh:mm)
   const formatDate = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      const date = new Date(dateString);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${day}-${month}-${year} ${hours}:${minutes}`;
     } catch {
       return dateString;
     }
   };
 
-  // Format date only (no time) for display
+  // Format date only (no time) for display (dd-mm-yyyy)
   const formatDateOnly = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      });
+      const date = new Date(dateString);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
     } catch {
       return dateString;
     }
@@ -120,6 +120,36 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+  };
+
+  // Safe string conversion for potentially complex values
+  const safeStringValue = (value: unknown): string => {
+    if (value === null || value === undefined) {
+      return '-';
+    }
+    if (typeof value === 'string') {
+      return value;
+    }
+    if (typeof value === 'number') {
+      return String(value);
+    }
+    if (typeof value === 'object') {
+      // Handle objects with 'value' property
+      if ('value' in value) {
+        return String(value.value);
+      }
+      // Handle objects with 'Key' and 'Value' properties
+      if ('Key' in value && 'Value' in value) {
+        return `${value.Key}: ${value.Value}`;
+      }
+      // Try to stringify other objects
+      try {
+        return JSON.stringify(value);
+      } catch {
+        return '[Object]';
+      }
+    }
+    return String(value);
   };
 
   // Get status color for settlement status
@@ -162,17 +192,23 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
   const renderCellContent = (transaction: Transaction, column: ColumnProperty) => {
     const value = getTransactionValue(transaction, column.ColumnAccessor);
 
+    // Handle null or undefined values
+    if (value === null || value === undefined) {
+      return <span className="text-sm text-gray-400">-</span>;
+    }
+
+    // Handle arrays
     if (column.IsList && Array.isArray(value)) {
       return (
         <div className="space-y-1">
           {value.map((item, index) => (
             <div key={index} className="text-sm">
-              {typeof item === 'object' ? (
+              {typeof item === 'object' && item !== null ? (
                 <div>
-                  <span className="font-medium">{item.Key}:</span> {item.Value}
+                  <span className="font-medium">{item.Key || 'Key'}:</span> {item.Value || item.value || 'N/A'}
                 </div>
               ) : (
-                item
+                String(item)
               )}
             </div>
           ))}
@@ -180,7 +216,27 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
       );
     }
 
-    return <span className="text-sm">{value}</span>;
+    // Handle objects (not arrays)
+    if (typeof value === 'object' && value !== null) {
+      // If it has a 'value' property, display that
+      if ('value' in value) {
+        return <span className="text-sm">{String(value.value)}</span>;
+      }
+      // If it has Key/Value properties, display them
+      if ('Key' in value && 'Value' in value) {
+        return <span className="text-sm">{value.Key}: {value.Value}</span>;
+      }
+      // For other objects, try to stringify or show a placeholder
+      try {
+        const stringified = JSON.stringify(value);
+        return <span className="text-sm text-gray-600">{stringified}</span>;
+      } catch {
+        return <span className="text-sm text-gray-400">[Object]</span>;
+      }
+    }
+
+    // Handle primitive values
+    return <span className="text-sm">{String(value)}</span>;
   };
 
   // Settlement Status Popup Component
@@ -213,10 +269,10 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
           </div>
 
           {/* Row 2: Mismatches */}
-          {transaction.MismatchNames && (
-            <div className="p-4 bg-yellow-50 rounded-lg">
+          {transaction.MismatchNames && formatMismatchNames(transaction.MismatchNames) && (
+            <div className="p-4 bg-yellow-50 rounded-lg text-center">
               <label className="block text-sm font-medium text-gray-700">Mismatches</label>
-              <p className="text-sm text-yellow-800">{transaction.MismatchNames}</p>
+              <p className="text-sm text-yellow-800">{formatMismatchNames(transaction.MismatchNames)}</p>
             </div>
           )}
 
@@ -245,17 +301,25 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
           <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
             <div>
               <label className="block text-sm font-medium text-gray-700">Batch Reference</label>
-              <p className="text-sm">{transaction.BatchReconciliationReference}</p>
+              <p className="text-sm">{safeStringValue(transaction.BatchReconciliationReference)}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Batch Date</label>
-              <p className="text-sm">{formatDate(transaction.BatchReconciliationDate)}</p>
+              <p className="text-sm">{formatDate(safeStringValue(transaction.BatchReconciliationDate))}</p>
             </div>
           </div>
         </div>
       </DialogContent>
     </Dialog>
-  );
+    );
+
+  // Helper function to extract mismatch names from array of objects with 'value' property
+  const formatMismatchNames = (mismatches: Array<{ value: string }> | undefined | null): string => {
+    if (!mismatches || !Array.isArray(mismatches)) {
+      return '';
+    }
+    return mismatches.map((mismatch) => mismatch.value).join(', ');
+  };
 
   // Charges Popup Component
   const ChargesPopup = ({ transaction }: { transaction: Transaction }) => (
@@ -289,10 +353,10 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
           </div>
 
           {/* Row 2: Charge Mismatches */}
-          {transaction.Charges.ChargeMismatchNames && (
-            <div className="p-4 bg-yellow-50 rounded-lg">
+          {transaction.Charges.ChargeMismatchNames && formatMismatchNames(transaction.Charges.ChargeMismatchNames) && (
+            <div className="p-4 bg-yellow-50 rounded-lg text-center">
               <label className="block text-sm font-medium text-gray-700">Charge Mismatches</label>
-              <p className="text-sm text-yellow-800">{transaction.Charges.ChargeMismatchNames}</p>
+              <p className="text-sm text-yellow-800">{formatMismatchNames(transaction.Charges.ChargeMismatchNames)}</p>
             </div>
           )}
 
@@ -321,11 +385,11 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
           <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
             <div>
               <label className="block text-sm font-medium text-gray-700">Batch Reference</label>
-              <p className="text-sm">{transaction.Charges.BatchReconciliationReference}</p>
+              <p className="text-sm">{safeStringValue(transaction.Charges.BatchReconciliationReference)}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Batch Date</label>
-              <p className="text-sm">{formatDate(transaction.Charges.BatchReconciliationDate)}</p>
+              <p className="text-sm">{formatDate(safeStringValue(transaction.Charges.BatchReconciliationDate))}</p>
             </div>
           </div>
         </div>
@@ -396,7 +460,7 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
                     {formatDate(transaction.TransactionDate)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatDateOnly(transaction.BusinessDay)}
+                    {transaction.BusinessDay ? formatDateOnly(transaction.BusinessDay) : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {transaction.PaymentMethodName}
@@ -405,14 +469,14 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
                     <DecimalNumber num={transaction.TransactionAmount} />
                   </td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm ${transaction.IsInTransitOverdue ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
-                    {formatDateOnly(transaction.InTransitDueDate)}
+                    {transaction.InTransitDueDate ? formatDateOnly(transaction.InTransitDueDate) : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
                       onClick={() => setPopupData({ type: 'settlement', transaction })}
                       className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer hover:opacity-80 transition-opacity ${getSettlementStatusColor(transaction)}`}
                     >
-                      {transaction.BlendedSettlementStatusName || transaction.BlendedSettlementStatusTag}
+                      {safeStringValue(transaction.BlendedSettlementStatusName || transaction.BlendedSettlementStatusTag)}
                     </button>
                   </td>
 
@@ -429,7 +493,7 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
                       onClick={() => setPopupData({ type: 'charges', transaction })}
                       className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer hover:opacity-80 transition-opacity ${getChargesStatusColor(transaction)}`}
                     >
-                      {transaction.Charges.BlendedChargesStatusName || transaction.Charges.BlendedChargesStatusTag}
+                      {safeStringValue(transaction.Charges.BlendedChargesStatusName || transaction.Charges.BlendedChargesStatusTag)}
                     </button>
                   </td>
                 </tr>
