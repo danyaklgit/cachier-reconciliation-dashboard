@@ -3,3 +3,7 @@
 .env
 
 .vercel
+
+/cachier-dashboard-deployment.zip
+/deployment-package
+.DS_Store
