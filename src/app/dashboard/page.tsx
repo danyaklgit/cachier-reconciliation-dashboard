@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { ChevronLeft, ChevronRight, FilterIcon, X, Settings, GripVertical, RotateCcw, InfoIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FilterIcon, X, Settings, GripVertical, RotateCcw, InfoIcon, DollarSign } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ReconciliationTable } from '@/components/ReconciliationTable';
 import { Transaction } from '@/components/Transaction';
+import { CashPositionModal } from '@/components/CashPositionModal';
 import { DashboardData, DataNode, Filter, FilterState, Topic } from '@/types';
 import { getMixedFontClass } from '@/lib/font-utils';
 import Image from 'next/image';
@@ -54,6 +55,8 @@ function DashboardContent() {
   const [tenantsLoading, setTenantsLoading] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<DataNode | null>(null);
   const [highlightedRowId, setHighlightedRowId] = useState<string | null>(null);
+  const [isCashPositionModalOpen, setIsCashPositionModalOpen] = useState(false);
+  const [selectedCashPositionOutlet, setSelectedCashPositionOutlet] = useState<{id: string, name: string} | null>(null);
 
   // New selection states
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
@@ -704,7 +707,57 @@ function DashboardContent() {
     setSelectedTransaction(null);
   };
 
-  if (loading) {
+  // Get selected outlet details for cash position modal
+  const getSelectedOutletDetails = () => {
+    const outletDetails: {id: string, name: string, code: string}[] = [];
+    
+    tenantsData.Tenants.forEach(tenant => {
+      tenant.Areas.forEach(area => {
+        area.Outlets.forEach(outlet => {
+          if (selectedOutlets.includes(outlet.OutletId.toString())) {
+            outletDetails.push({
+              id: outlet.OutletId.toString(),
+              name: outlet.OutletName,
+              code: outlet.OutletCode
+            });
+          }
+        });
+      });
+    });
+    
+    return outletDetails;
+  };
+
+  const handleCashPositionClick = (outletId: string, outletName: string) => {
+    setSelectedCashPositionOutlet({id: outletId, name: outletName});
+    setIsCashPositionModalOpen(false); // Close the outlets list modal
+  };
+
+  // Handle escape key to close cash position modals
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        // Close cash position modal first if open
+        if (selectedCashPositionOutlet) {
+          setSelectedCashPositionOutlet(null);
+        }
+        // Close outlets selection modal if open
+        else if (isCashPositionModalOpen) {
+          setIsCashPositionModalOpen(false);
+        }
+      }
+    };
+
+    // Add event listener
+    document.addEventListener('keydown', handleEscapeKey);
+
+    // Cleanup event listener on unmount
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [selectedCashPositionOutlet, isCashPositionModalOpen]);
+
+    if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 flex items-center justify-center">
         <div className="text-center space-y-6">
@@ -965,6 +1018,43 @@ function DashboardContent() {
 
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
+              {/* Cash Position Button */}
+              {!filtersLoading && selectedOutlets.length > 0 && (
+                <Dialog open={isCashPositionModalOpen} onOpenChange={setIsCashPositionModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      className="text-sm bg-white text-blue-500 hover:bg-gradient-to-r from-blue-500 cursor-pointer to-indigo-600 hover:from-blue-600 hover:to-indigo-700 hover:text-white shadow-card hover:shadow-lg transition-all duration-500 px-4 py-2 rounded-lg"
+                    >
+                      <DollarSign className="w-4 h-4 mr-2" />
+                      Cash Position
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md bg-white">
+                    <DialogHeader>
+                      <DialogTitle>Select Outlet for Cash Position</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                      {getSelectedOutletDetails().map((outlet) => (
+                        <div key={outlet.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div>
+                            <p className="font-medium text-gray-900">{outlet.name}</p>
+                            <p className="text-sm text-gray-600">{outlet.code}</p>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => handleCashPositionClick(outlet.id, outlet.name)}
+                            className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white"
+                          >
+                            Cash Position
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
+
               {!filtersLoading && (
                 <Dialog open={isHierarchyModalOpen} onOpenChange={(open) => {
                   if (open) {
@@ -1347,7 +1437,7 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                <div className="flex flex-row items-center justify-center sm:flex-row items-center gap-4 p-6 bg-white/60 rounded-xl border border-modern-light shadow-subtle mt-8">
+                <div className="flex flex-row items-center justify-center gap-4 p-6 bg-white/60 rounded-xl border border-modern-light shadow-subtle mt-8">
                   <Button
                     variant="outline"
                     onClick={() => navigateToDate('prev')}
@@ -1493,6 +1583,15 @@ function DashboardContent() {
           dashboardData={dashboardData?.ChildNodes || []}
           tenantsData={tenantsData}
           topicsData={topicsData}
+        />
+      )}
+
+      {/* Cash Position Modal */}
+      {selectedCashPositionOutlet && (
+        <CashPositionModal
+          isOpen={!!selectedCashPositionOutlet}
+          onClose={() => setSelectedCashPositionOutlet(null)}
+          outletName={selectedCashPositionOutlet.name}
         />
       )}
     </div>
