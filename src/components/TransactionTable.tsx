@@ -270,9 +270,9 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
 
           {/* Row 2: Mismatches */}
           {transaction.MismatchNames && formatMismatchNames(transaction.MismatchNames) && (
-            <div className="p-4 bg-yellow-50 rounded-lg text-center">
+            <div className="p-4 bg-yellow-50 rounded-lg text-center flex flex-col gap-2">
               <label className="block text-sm font-medium text-gray-700">Mismatches</label>
-              <p className="text-sm text-yellow-800">{formatMismatchNames(transaction.MismatchNames)}</p>
+              <p className="text-base text-red-500 font-semibold">{formatMismatchNames(transaction.MismatchNames)}</p>
             </div>
           )}
 
@@ -354,9 +354,9 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
 
           {/* Row 2: Charge Mismatches */}
           {transaction.Charges.ChargeMismatchNames && formatMismatchNames(transaction.Charges.ChargeMismatchNames) && (
-            <div className="p-4 bg-yellow-50 rounded-lg text-center">
+            <div className="p-4 bg-yellow-50 rounded-lg text-center flex flex-col gap-2">
               <label className="block text-sm font-medium text-gray-700">Charge Mismatches</label>
-              <p className="text-sm text-yellow-800">{formatMismatchNames(transaction.Charges.ChargeMismatchNames)}</p>
+              <p className="text-base text-red-500 font-semibold">{formatMismatchNames(transaction.Charges.ChargeMismatchNames)}</p>
             </div>
           )}
 
