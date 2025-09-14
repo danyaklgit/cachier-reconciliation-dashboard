@@ -155,3 +155,26 @@ export interface Outlet {
 export interface FilterState {
   [key: string]: string[];
 }
+
+// Cash Position Types
+export interface CashPositionItem {
+  id: string;
+  category: string;
+  inflows: number | null;
+  outflows: number | null;
+  bookVariance: number | null;
+  bankDeposit: number | null;
+  bankVerification: number | null;
+  bankVariance: number | null;
+  children?: CashPositionItem[];
+}
+
+// Extended interface for rendering with calculated properties
+export interface CashPositionItemWithMeta extends CashPositionItem {
+  level: number;
+  isExpandable: boolean;
+}
+
+export interface CashPositionData {
+  cashPositionData: CashPositionItem[];
+}

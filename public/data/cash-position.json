@@ -1,0 +1,78 @@
+{
+  "cashPositionData": [
+    {
+      "id": "cash-records",
+      "category": "Cash Records",
+      "inflows": 255000,
+      "outflows": 215000,
+      "bookVariance": 40000,
+      "bankDeposit": null,
+      "bankVerification": null,
+      "bankVariance": null,
+      "children": [
+        {
+          "id": "sales-cash",
+          "category": "Sales Cash",
+          "inflows": 220000,
+          "outflows": null,
+          "bookVariance": null,
+          "bankDeposit": null,
+          "bankVerification": null,
+          "bankVariance": null
+        },
+        {
+          "id": "non-sales-cash",
+          "category": "Non-Sales Cash",
+          "inflows": 35000,
+          "outflows": 10000,
+          "bookVariance": 25000,
+          "bankDeposit": null,
+          "bankVerification": null,
+          "bankVariance": null,
+          "children": [
+            {
+              "id": "opening-balance",
+              "category": "Opening Balance",
+              "inflows": 15000,
+              "outflows": null,
+              "bookVariance": null,
+              "bankDeposit": null,
+              "bankVerification": null,
+              "bankVariance": null
+            },
+            {
+              "id": "miscellaneous",
+              "category": "Miscellaneous",
+              "inflows": 20000,
+              "outflows": 10000,
+              "bookVariance": null,
+              "bankDeposit": null,
+              "bankVerification": null,
+              "bankVariance": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bank-collections",
+      "category": "Bank Collections",
+      "inflows": null,
+      "outflows": 205000,
+      "bookVariance": null,
+      "bankDeposit": 205000,
+      "bankVerification": 205000,
+      "bankVariance": null
+    },
+    {
+      "id": "cdm-receipts",
+      "category": "CDM Receipts",
+      "inflows": 200000,
+      "outflows": 190000,
+      "bookVariance": 10000,
+      "bankDeposit": 190000,
+      "bankVerification": 190000,
+      "bankVariance": null
+    }
+  ]
+}
