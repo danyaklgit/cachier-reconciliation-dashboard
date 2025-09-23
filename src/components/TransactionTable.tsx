@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import { Transaction, TransactionApiResponse, ColumnProperty, ColumnAccessor } from '@/types';
+import { Transaction, TransactionApiResponse, ColumnAccessor } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { InfoIcon, AlertTriangle } from 'lucide-react';
 
 interface TransactionTableProps {
   data: TransactionApiResponse;
@@ -34,6 +36,7 @@ const DecimalNumber = ({ num }: { num: number }) => {
 
 export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData, handleClose }: TransactionTableProps) {
   const [popupData, setPopupData] = useState<PopupData | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const lastRowRef = useRef<HTMLTableRowElement>(null);
 
   useEffect(() => {
@@ -61,8 +64,18 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
 
   // Sort column properties by ColumnOrder
   const sortedColumns = useMemo(() => {
-    return [...data.ColumnProperties].sort((a, b) => a.ColumnOrder - b.ColumnOrder);
+    try {
+      if (!data.ColumnProperties || !Array.isArray(data.ColumnProperties)) {
+        console.warn('Invalid ColumnProperties data:', data.ColumnProperties);
+        return [];
+      }
+      return [...data.ColumnProperties].sort((a, b) => (a.ColumnOrder || 0) - (b.ColumnOrder || 0));
+    } catch (err) {
+      console.error('Error sorting columns:', err);
+      return [];
+    }
   }, [data.ColumnProperties]);
+
 
   // Intersection observer callback for infinite scroll
   const lastRowObserver = useCallback((node: HTMLTableRowElement | null) => {
@@ -184,87 +197,78 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
 
   // Get value from transaction using column accessor
   const getTransactionValue = (transaction: Transaction, accessor: ColumnAccessor) => {
-    if (accessor.IsAttribute) {
-      // Read from Attributes array
-      const attribute = transaction.Attributes.find(attr => attr.Key === accessor.Accessor);
-      return attribute ? attribute.Value : null;
-    } else {
-      // Read from transaction property
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (transaction as any)[accessor.Accessor];
+    try {
+      if (accessor.IsAttribute) {
+        // Read from Attributes array
+        const attribute = transaction.Attributes?.find(attr => attr.Key === accessor.Accessor);
+        return attribute ? attribute.Value : null;
+      } else {
+        // Read from transaction property
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (transaction as any)[accessor.Accessor];
+      }
+    } catch (err) {
+      console.warn('Error getting transaction value:', err, { accessor, transaction: transaction.TransactionReference });
+      return null;
     }
   };
 
-  // Render cell content based on column type
-  const renderCellContent = (transaction: Transaction, column: ColumnProperty) => {
-    // If column has multiple accessors, it's a grouped column
-    if (column.ColumnAccessors.length > 1) {
-      return (
-        <div className="space-y-1">
-          {column.ColumnAccessors.map((accessor, index) => {
-            const value = getTransactionValue(transaction, accessor);
-            const displayValue = value === null || value === undefined ? '-' : String(value);
-            return (
+  // Render content for a single accessor
+  const renderSingleAccessorContent = (transaction: Transaction, accessor: ColumnAccessor) => {
+    try {
+      const value = getTransactionValue(transaction, accessor);
+
+      // Handle null or undefined values
+      if (value === null || value === undefined) {
+        return <span className="text-sm text-gray-400">-</span>;
+      }
+
+      // Handle arrays (for attributes that might be arrays)
+      if (Array.isArray(value)) {
+        return (
+          <div className="space-y-1">
+            {value.map((item, index) => (
               <div key={index} className="text-sm">
-                {accessor.Label && <span className="font-medium text-gray-600">{accessor.Label}: </span>}
-                <span>{displayValue}</span>
+                {typeof item === 'object' && item !== null ? (
+                  <div>
+                    <span className="font-medium">{item.Key || 'Key'}:</span> {item.Value || item.value || 'N/A'}
+                  </div>
+                ) : (
+                  String(item)
+                )}
               </div>
-            );
-          })}
-        </div>
-      );
-    }
-
-    // Single accessor column
-    const accessor = column.ColumnAccessors[0];
-    const value = getTransactionValue(transaction, accessor);
-
-    // Handle null or undefined values
-    if (value === null || value === undefined) {
-      return <span className="text-sm text-gray-400">-</span>;
-    }
-
-    // Handle arrays (for attributes that might be arrays)
-    if (Array.isArray(value)) {
-      return (
-        <div className="space-y-1">
-          {value.map((item, index) => (
-            <div key={index} className="text-sm">
-              {typeof item === 'object' && item !== null ? (
-                <div>
-                  <span className="font-medium">{item.Key || 'Key'}:</span> {item.Value || item.value || 'N/A'}
-                </div>
-              ) : (
-                String(item)
-              )}
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    // Handle objects (not arrays)
-    if (typeof value === 'object' && value !== null) {
-      // If it has a 'value' property, display that
-      if ('value' in value) {
-        return <span className="text-sm">{String(value.value)}</span>;
+            ))}
+          </div>
+        );
       }
-      // If it has Key/Value properties, display them
-      if ('Key' in value && 'Value' in value) {
-        return <span className="text-sm">{value.Key}: {value.Value}</span>;
-      }
-      // For other objects, try to stringify or show a placeholder
-      try {
-        const stringified = JSON.stringify(value);
-        return <span className="text-sm text-gray-600">{stringified}</span>;
-      } catch {
-        return <span className="text-sm text-gray-400">[Object]</span>;
-      }
-    }
 
-    // Handle primitive values
-    return <span className="text-sm">{String(value)}</span>;
+      // Handle objects (not arrays)
+      if (typeof value === 'object' && value !== null) {
+        // If it has a 'value' property, display that
+        if ('value' in value) {
+          return <span className="text-sm">{String(value.value)}</span>;
+        }
+        // If it has Key/Value properties, display them
+        if ('Key' in value && 'Value' in value) {
+          return <span className="text-sm">{value.Key}: {value.Value}</span>;
+        }
+        // For other objects, try to stringify or show a placeholder
+        try {
+          const stringified = JSON.stringify(value);
+          return <span className="text-sm text-gray-600">{stringified}</span>;
+        } catch {
+          return <span className="text-sm text-gray-400">[Object]</span>;
+        }
+      }
+
+      // Handle primitive values
+      return <span className="text-sm">{String(value)}</span>;
+    } catch (err) {
+      console.warn('Error rendering accessor content:', err, { accessor, transaction: transaction.TransactionReference });
+      return <span className="text-sm text-red-400">Error</span>;
+    }
   };
+
 
   // Settlement Status Popup Component
   const SettlementStatusPopup = ({ transaction }: { transaction: Transaction }) => (
@@ -424,75 +428,173 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
     </Dialog>
   );
 
-  return (
-    <div className="w-full">
-      {/* Table */}
-      <div className="overflow-auto max-h-[70vh] border border-gray-200 rounded-lg">
+  // Error boundary component
+  const ErrorDisplay = ({ error, onRetry }: { error: string; onRetry: () => void }) => (
+    <div className="w-full p-8 bg-red-50 border border-red-200 rounded-lg">
+      <div className="flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-red-800 mb-2">
+            Transaction Table Error
+          </h3>
+          <p className="text-sm text-red-700 mb-4 max-w-md">
+            An error occurred while rendering the transaction table. This could be due to unexpected data format or a rendering issue.
+          </p>
+          <div className="text-xs text-red-600 mb-4 font-mono bg-red-100 p-2 rounded border max-w-lg mx-auto">
+            {error}
+          </div>
+          <div className="flex gap-2 justify-center">
+            <button
+              onClick={handleClose}
+              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Handle retry
+  const handleRetry = () => {
+    setError(null);
+  };
+
+  // Show error state if there's an error
+  if (error) {
+    return <ErrorDisplay error={error} onRetry={handleRetry} />;
+  }
+
+  // Main component render with try-catch
+  try {
+    return (
+      <div className="w-full">
+        {/* Table */}
+        <div className="overflow-auto max-h-[70vh] border border-gray-200 rounded-lg">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
-            <tr>
-              {/* Fixed Columns - First Chunk */}
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Reference
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Business Day
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Payment Method
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Amount
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                In-Transit Deadline
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Settlement Status
-              </th>
+            {/* Check if we need multi-row headers */}
+            {sortedColumns.some(column => column.ColumnAccessors.length > 1) ? (
+              <>
+                {/* First Header Row - Main column labels (for multi-row structure) */}
+                <tr>
+                  {/* Fixed Columns - First Chunk */}
+                  <th rowSpan={2} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Reference
+                  </th>
+                  <th rowSpan={2} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Date
+                  </th>
+                  <th rowSpan={2} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Business Day
+                  </th>
+                  <th rowSpan={2} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Payment Method
+                  </th>
+                  <th rowSpan={2} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Amount
+                  </th>
+                  <th rowSpan={2} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    In-Transit Deadline
+                  </th>
+                  <th rowSpan={2} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Settlement Status
+                  </th>
 
-              {/* Dynamic Columns */}
-              {sortedColumns.map((column) => {
-                // If column has multiple accessors, it's a grouped header
-                if (column.ColumnAccessors.length > 1) {
-                  return (
-                    <th key={`group-${column.ColumnOrder}`} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      <div>
-                        <div className="font-semibold">{column.ColumnLabel}</div>
-                        <div className="space-y-1 mt-1">
-                          {column.ColumnAccessors.map((accessor, index) => (
-                            <div key={index} className="text-xs font-normal text-gray-400">
-                              {accessor.Label || accessor.Accessor}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                  {/* Dynamic Columns - Main Headers */}
+                  {sortedColumns.map((column) => (
+                    <th 
+                      key={`main-${column.ColumnOrder}`} 
+                      colSpan={column.ColumnAccessors.length}
+                      rowSpan={column.ColumnAccessors.length === 1 ? 2 : 1}
+                      className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300"
+                    >
+                      {column.ColumnLabel}
                       {column.ColumnInfo && (
-                        <span className="ml-1 text-gray-400" title={column.ColumnInfo}>ℹ️</span>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <InfoIcon className="w-4 h-4 ml-1" />
+                          </TooltipTrigger>
+                          <TooltipContent className='text-xs bg-white p-3 py-2 italic'>
+                            {column.ColumnInfo}
+                          </TooltipContent>
+                        </Tooltip>
                       )}
                     </th>
-                  );
-                }
-                
-                // Single accessor column
-                return (
+                  ))}
+
+                  {/* Fixed Columns - Second Chunk */}
+                  <th rowSpan={2} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Charges
+                  </th>
+                </tr>
+
+                {/* Second Header Row - Sub column labels (only for columns with multiple accessors) */}
+                <tr className="border-t border-gray-200">
+                  {/* Dynamic Columns - Sub Headers */}
+                  {sortedColumns.map((column) => 
+                    column.ColumnAccessors.length > 1 ? 
+                      column.ColumnAccessors.map((accessor, accessorIndex) => (
+                        <th 
+                          key={`sub-${column.ColumnOrder}-${accessorIndex}`}
+                          className="px-3 py-2 text-left text-xs font-normal text-gray-500 uppercase tracking-wider border-r border-gray-200"
+                        >
+                          {accessor.Label || accessor.Accessor}
+                        </th>
+                      )) : null
+                  )}
+                </tr>
+              </>
+            ) : (
+              /* Single Row Header - When no multi-accessor columns exist */
+              <tr>
+                {/* Fixed Columns - First Chunk */}
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Reference
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Business Day
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Payment Method
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Amount
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  In-Transit Deadline
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Settlement Status
+                </th>
+
+                {/* Dynamic Columns - Single Headers */}
+                {sortedColumns.map((column) => (
                   <th key={`single-${column.ColumnOrder}`} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {column.ColumnLabel}
                     {column.ColumnInfo && (
-                      <span className="ml-1 text-gray-400" title={column.ColumnInfo}>ℹ️</span>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <InfoIcon className="w-4 h-4 ml-1" />
+                        </TooltipTrigger>
+                        <TooltipContent className='text-xs bg-white p-3 py-2 italic'>
+                          {column.ColumnInfo}
+                        </TooltipContent>
+                      </Tooltip>
                     )}
                   </th>
-                );
-              })}
+                ))}
 
-              {/* Fixed Columns - Second Chunk */}
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Charges
-              </th>
-            </tr>
+                {/* Fixed Columns - Second Chunk */}
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Charges
+                </th>
+              </tr>
+            )}
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {data.Transactions.map((transaction, index) => {
@@ -531,12 +633,22 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
                     </button>
                   </td>
 
-                  {/* Dynamic Columns */}
-                  {sortedColumns.map((column) => (
-                    <td key={`cell-${column.ColumnOrder}`} className="px-6 py-4 text-sm text-gray-900">
-                      {renderCellContent(transaction, column)}
-                    </td>
-                  ))}
+                  {/* Dynamic Columns - Handle single vs multi-accessor columns */}
+                  {sortedColumns.map((column) => 
+                    column.ColumnAccessors.length === 1 ? (
+                      // Single accessor - use main column styling
+                      <td key={`cell-${column.ColumnOrder}`} className="px-6 py-4 text-sm text-gray-900">
+                        {renderSingleAccessorContent(transaction, column.ColumnAccessors[0])}
+                      </td>
+                    ) : (
+                      // Multiple accessors - individual cells with smaller padding
+                      column.ColumnAccessors.map((accessor, accessorIndex) => (
+                        <td key={`cell-${column.ColumnOrder}-${accessorIndex}`} className="px-3 py-4 text-sm text-gray-900 border-r border-gray-100">
+                          {renderSingleAccessorContent(transaction, accessor)}
+                        </td>
+                      ))
+                    )
+                  )}
 
                   {/* Fixed Columns - Second Chunk */}
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -572,9 +684,18 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
       </div>
 
 
-      {/* Popups */}
-      {popupData?.type === 'settlement' && <SettlementStatusPopup transaction={popupData.transaction} />}
-      {popupData?.type === 'charges' && <ChargesPopup transaction={popupData.transaction} />}
-    </div>
-  );
+        {/* Popups */}
+        {popupData?.type === 'settlement' && <SettlementStatusPopup transaction={popupData.transaction} />}
+        {popupData?.type === 'charges' && <ChargesPopup transaction={popupData.transaction} />}
+      </div>
+    );
+  } catch (err) {
+    // Catch any rendering errors and set error state
+    console.error('TransactionTable Error:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+    setError(errorMessage);
+    
+    // Return error display immediately
+    return <ErrorDisplay error={errorMessage} onRetry={handleRetry} />;
+  }
 }

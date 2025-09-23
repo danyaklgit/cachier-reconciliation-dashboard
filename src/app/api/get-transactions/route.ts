@@ -45,8 +45,48 @@ export async function POST(request: NextRequest) {
     }
 
     let data = await response.json();
+    
+    // Override ColumnProperties for testing the new API structure
+    // const testColumnProperties = [
+    //   {
+    //     "ColumnLabel": "Route Info",
+    //     "ColumnAccessors": [
+    //       {
+    //         "Accessor": "DRIVER",
+    //         "Label": "Driver Name",
+    //         "IsAttribute": true // Read from Attributes that is a list of Key Value Pair. Key is Accessor
+    //       },
+    //       {
+    //         "Accessor": "ROUTE",
+    //         "Label": "Route Name",
+    //         "IsAttribute": true // Read from Attributes that is a list of Key Value Pair. Key is Accessor
+    //       },
+    //       {
+    //         "Accessor": "BatchReconciliationReference",
+    //         "Label": "Batch Reference",
+    //         "IsAttribute": false // Read from Property of the transaction. Key is Property Name
+    //       }
+    //     ],
+    //     "ColumnOrder": 2,
+    //     "ColumnInfo": null
+    //   },
+    //   {
+    //     "ColumnLabel": "Driver",
+    //     "ColumnAccessors": [
+    //       {
+    //         "Accessor": "DRIVER",
+    //         "Label": "",
+    //         "IsAttribute": true
+    //       }
+    //     ],
+    //     "ColumnOrder": 1,
+    //     "ColumnInfo": null
+    //   }
+    // ];
+    
     data = {
       ...data,
+      // ColumnProperties: testColumnProperties
     }
 
     return NextResponse.json(data);
