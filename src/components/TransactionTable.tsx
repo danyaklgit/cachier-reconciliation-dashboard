@@ -429,7 +429,7 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
   );
 
   // Error boundary component
-  const ErrorDisplay = ({ error, onRetry }: { error: string; onRetry: () => void }) => (
+  const ErrorDisplay = ({ error }: { error: string }) => (
     <div className="w-full p-8 bg-red-50 border border-red-200 rounded-lg">
       <div className="flex items-center justify-center">
         <div className="text-center">
@@ -456,14 +456,10 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
     </div>
   );
 
-  // Handle retry
-  const handleRetry = () => {
-    setError(null);
-  };
 
   // Show error state if there's an error
   if (error) {
-    return <ErrorDisplay error={error} onRetry={handleRetry} />;
+    return <ErrorDisplay error={error} />;
   }
 
   // Main component render with try-catch
@@ -533,7 +529,7 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
                 {/* Second Header Row - Sub column labels (only for columns with multiple accessors) */}
                 <tr className="border-t border-gray-200">
                   {/* Dynamic Columns - Sub Headers */}
-                  {sortedColumns.map((column) => 
+                  {sortedColumns.flatMap((column) => 
                     column.ColumnAccessors.length > 1 ? 
                       column.ColumnAccessors.map((accessor, accessorIndex) => (
                         <th 
@@ -542,7 +538,7 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
                         >
                           {accessor.Label || accessor.Accessor}
                         </th>
-                      )) : null
+                      )) : []
                   )}
                 </tr>
               </>
@@ -634,13 +630,13 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
                   </td>
 
                   {/* Dynamic Columns - Handle single vs multi-accessor columns */}
-                  {sortedColumns.map((column) => 
-                    column.ColumnAccessors.length === 1 ? (
+                  {sortedColumns.flatMap((column) => 
+                    column.ColumnAccessors.length === 1 ? [
                       // Single accessor - use main column styling
                       <td key={`cell-${column.ColumnOrder}`} className="px-6 py-4 text-sm text-gray-900">
                         {renderSingleAccessorContent(transaction, column.ColumnAccessors[0])}
                       </td>
-                    ) : (
+                    ] : (
                       // Multiple accessors - individual cells with smaller padding
                       column.ColumnAccessors.map((accessor, accessorIndex) => (
                         <td key={`cell-${column.ColumnOrder}-${accessorIndex}`} className="px-3 py-4 text-sm text-gray-900 border-r border-gray-100">
@@ -696,6 +692,6 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
     setError(errorMessage);
     
     // Return error display immediately
-    return <ErrorDisplay error={errorMessage} onRetry={handleRetry} />;
+    return <ErrorDisplay error={errorMessage} />;
   }
 }
