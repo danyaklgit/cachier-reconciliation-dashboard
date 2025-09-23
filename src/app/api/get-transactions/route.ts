@@ -44,7 +44,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const data = await response.json();
+    let data = await response.json();
+    data = {
+      ...data,
+    }
 
     return NextResponse.json(data);
   } catch (error) {

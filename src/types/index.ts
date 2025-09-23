@@ -63,12 +63,17 @@ export interface Topic {
 }
 
 // Transaction API Response Types
+export interface ColumnAccessor {
+  Accessor: string;
+  Label: string;
+  IsAttribute: boolean; // Read from Attributes if true, from Property if false
+}
+
 export interface ColumnProperty {
-  ColumnAccessor: string;
+  ColumnAccessors: ColumnAccessor[];
   ColumnLabel: string;
   ColumnOrder: number;
   ColumnInfo: string | null;
-  IsList: boolean;
 }
 
 export interface TransactionAttribute {

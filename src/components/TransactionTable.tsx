@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import { Transaction, TransactionApiResponse, ColumnProperty } from '@/types';
+import { Transaction, TransactionApiResponse, ColumnProperty, ColumnAccessor } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface TransactionTableProps {
@@ -183,22 +183,49 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
   };
 
   // Get value from transaction using column accessor
-  const getTransactionValue = (transaction: Transaction, columnAccessor: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (transaction as any)[columnAccessor];
+  const getTransactionValue = (transaction: Transaction, accessor: ColumnAccessor) => {
+    if (accessor.IsAttribute) {
+      // Read from Attributes array
+      const attribute = transaction.Attributes.find(attr => attr.Key === accessor.Accessor);
+      return attribute ? attribute.Value : null;
+    } else {
+      // Read from transaction property
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (transaction as any)[accessor.Accessor];
+    }
   };
 
   // Render cell content based on column type
   const renderCellContent = (transaction: Transaction, column: ColumnProperty) => {
-    const value = getTransactionValue(transaction, column.ColumnAccessor);
+    // If column has multiple accessors, it's a grouped column
+    if (column.ColumnAccessors.length > 1) {
+      return (
+        <div className="space-y-1">
+          {column.ColumnAccessors.map((accessor, index) => {
+            const value = getTransactionValue(transaction, accessor);
+            const displayValue = value === null || value === undefined ? '-' : String(value);
+            return (
+              <div key={index} className="text-sm">
+                {accessor.Label && <span className="font-medium text-gray-600">{accessor.Label}: </span>}
+                <span>{displayValue}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // Single accessor column
+    const accessor = column.ColumnAccessors[0];
+    const value = getTransactionValue(transaction, accessor);
 
     // Handle null or undefined values
     if (value === null || value === undefined) {
       return <span className="text-sm text-gray-400">-</span>;
     }
 
-    // Handle arrays
-    if (column.IsList && Array.isArray(value)) {
+    // Handle arrays (for attributes that might be arrays)
+    if (Array.isArray(value)) {
       return (
         <div className="space-y-1">
           {value.map((item, index) => (
@@ -428,14 +455,38 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
               </th>
 
               {/* Dynamic Columns */}
-              {sortedColumns.map((column) => (
-                <th key={column.ColumnAccessor} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {column.ColumnLabel}
-                  {column.ColumnInfo && (
-                    <span className="ml-1 text-gray-400" title={column.ColumnInfo}>ℹ️</span>
-                  )}
-                </th>
-              ))}
+              {sortedColumns.map((column) => {
+                // If column has multiple accessors, it's a grouped header
+                if (column.ColumnAccessors.length > 1) {
+                  return (
+                    <th key={`group-${column.ColumnOrder}`} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <div>
+                        <div className="font-semibold">{column.ColumnLabel}</div>
+                        <div className="space-y-1 mt-1">
+                          {column.ColumnAccessors.map((accessor, index) => (
+                            <div key={index} className="text-xs font-normal text-gray-400">
+                              {accessor.Label || accessor.Accessor}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {column.ColumnInfo && (
+                        <span className="ml-1 text-gray-400" title={column.ColumnInfo}>ℹ️</span>
+                      )}
+                    </th>
+                  );
+                }
+                
+                // Single accessor column
+                return (
+                  <th key={`single-${column.ColumnOrder}`} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {column.ColumnLabel}
+                    {column.ColumnInfo && (
+                      <span className="ml-1 text-gray-400" title={column.ColumnInfo}>ℹ️</span>
+                    )}
+                  </th>
+                );
+              })}
 
               {/* Fixed Columns - Second Chunk */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -482,7 +533,7 @@ export function TransactionTable({ data, onLoadMore, isLoadingMore, hasMoreData,
 
                   {/* Dynamic Columns */}
                   {sortedColumns.map((column) => (
-                    <td key={column.ColumnAccessor} className="px-6 py-4 text-sm text-gray-900">
+                    <td key={`cell-${column.ColumnOrder}`} className="px-6 py-4 text-sm text-gray-900">
                       {renderCellContent(transaction, column)}
                     </td>
                   ))}
